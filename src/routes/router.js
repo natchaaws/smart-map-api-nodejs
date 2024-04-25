@@ -13,9 +13,17 @@ module.exports = (app) => {
   app.get("/getCamera", camerasController.getAllCameras);
   app.get("/getPolygon", camerasController.getAllPolygon);
   app.get("/getDistrict", camerasController.getDistrict);
-  app.post("/saveCamera", upload.none(), camerasController.saveCamera);
-  app.post("/CameraPage", upload.none(), camerasController.getCameraPage);
 
+  
+  app.post("/CameraPage", upload.none(), camerasController.getCameraPage);
+  app.post("/addCamera", upload.none(), camerasController.addCamera);
+  app.post("/updateCamera", upload.none(), camerasController.updateCamera);
+  app.post("/CameraByidDistrict", upload.none(), camerasController.getCameraByidDistrict);
+  
+  app.post("/getAllCameraById", upload.none(), camerasController.getAllCameraById);
+  
+  app.post("/addLiveCamera", upload.none(), camerasController.addLiveCamera);
+  
   const streamControllerInstance = new streamController();
 
   // Call the startStream method on the instantiated object
