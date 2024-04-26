@@ -79,7 +79,7 @@ class CamerasModel {
       ip_address,
       port,
       modified_by,
-      camera_id
+      camera_id,
     } = camerasEdit;
 
     const query = `UPDATE public.camera
@@ -149,12 +149,12 @@ class CamerasModel {
 
   static async getCamerasPage(page, perPage, searchWord) {
     const offset = (page - 1) * perPage;
-  
+
     const whereClause = `
       (c.name ILIKE $1 OR $1 IS NULL) 
       OR (d.name ILIKE $1 OR $1 IS NULL)
     `;
-  
+
     const query = `
       SELECT c.camera_id, c.name, c.location, 
         c.rtsp_path, c.camera_lat, c.camera_lng, 
@@ -171,14 +171,14 @@ class CamerasModel {
       ORDER BY c.camera_id ASC 
       LIMIT $2 OFFSET $3;
     `;
-  
+
     const search = searchWord ? `%${searchWord}%` : null;
-  
+
     try {
       const result = await pool.query(query, [search, perPage, offset]);
-  
+
       const data = result.rows;
-  
+
       // Include d alias in COUNT query as well
       const totalCountQuery = `SELECT COUNT(*) FROM public.camera AS c LEFT JOIN public.district AS d ON c.district_id = d.id WHERE ${whereClause}`;
       const totalCountResult = await pool.query(totalCountQuery, [search]);
@@ -206,10 +206,9 @@ class CamerasModel {
       throw new Error("Internal server error");
     }
   }
-  
+
   static async addLiveCamera(Values) {
-    const { user_id, layout, cameras, created_by, modified_by } =
-      Values;
+    const { user_id, layout, cameras, created_by, modified_by } = Values;
 
     const existingUserQuery = `
       SELECT live_id, user_id
@@ -230,11 +229,15 @@ class CamerasModel {
           modified_by= $3, 
           modified_date= NOW()
       WHERE user_id = $4 RETURNING user_id,live_id ;`;
-      const valuesUpdate = [layout, JSON.stringify(cameras), modified_by, user_id ];
+      const valuesUpdate = [
+        layout,
+        JSON.stringify(cameras),
+        modified_by,
+        user_id,
+      ];
 
       const result = await pool.query(queryUpdate, valuesUpdate);
       return result.rows[0];
-
     } else {
       // insert
       const queryInsert = `
@@ -245,44 +248,54 @@ class CamerasModel {
               created_by
               ) 
           VALUES ($1, $2, $3, $4)  RETURNING *;`;
-      const valuesInsert = [user_id, layout, JSON.stringify(cameras), created_by];
+      const valuesInsert = [
+        user_id,
+        layout,
+        JSON.stringify(cameras),
+        created_by,
+      ];
 
       const result = await pool.query(queryInsert, valuesInsert);
       return result.rows[0];
     }
   }
 
-  static async getCamerasByIds(cameraIds) {
-    // Create a comma-separated string of the camera IDs for the WHERE IN clause
-    const cameraIdString = cameraIds.join(',');
+  static async getCamerasByIds(userId) {
+    const userquery = `
+      SELECT lv.live_id, lv.user_id, 
+          lv.layout, 
+          u.username, u.email, u.role_id
+      FROM public.live_view lv
+          JOIN public.users u ON lv.user_id = u.user_id
+      WHERE lv.user_id = $1;
+          `;
+
+    const query = `SELECT c.camera_id, c.name, c.location, 
+    c.rtsp_path, c.camera_lat, c.camera_lng, 
+    c.district_id, c.status, c.ip_address, 
+    c.port, c.created_by, c.created_date, 
+    c.is_delete
+  FROM public.camera c
+  JOIN (
+      SELECT lv.live_id, lv.user_id, jsonb_array_elements(lv.cameras) ->> 'camera_id' AS camera_id
+      FROM public.live_view lv
+      WHERE lv.user_id = $1
+  ) lv ON lv.camera_id::int = c.camera_id;
   
-    const query = `
-    SELECT 
-      lv.live_id, lv.user_id, lv.layout, lv.cameras,
-      c.camera_id, c.name, c.location, c.rtsp_path, 
-      c.camera_lat, c.camera_lng, c.district_id, c.status, 
-      c.ip_address, c.port, c.created_by AS camera_created_by, 
-      c.created_date AS camera_created_date, c.modified_by AS camera_modified_by, 
-      c.modified_date AS camera_modified_date, c.deleted_by AS camera_deleted_by, 
-      c.deleted_date AS camera_deleted_date, c.is_delete AS camera_is_delete,
-      lv.created_by AS live_created_by, lv.created_date AS live_created_date, 
-      lv.modified_by AS live_modified_by, lv.modified_date AS live_modified_date, 
-      lv.deleted_by AS live_deleted_by, lv.deleted_date AS live_deleted_date, 
-      lv.is_delete AS live_is_delete
-    FROM public.live_view lv
-    JOIN public.camera c ON lv.cameras @> '[{"camera_id": ' || c.camera_id || '}]'
-    WHERE c.camera_id IN (${cameraIdString});  -- Properly formatted IN clause
-    `;
-  
+  `;
+
     try {
-      const { rows } = await pool.query(query);
-      return rows;
+      const  result  = await pool.query(query, [userId]);
+      const camera = result.rows;
+
+      const  rowsuser  = await pool.query(userquery, [userId]);
+      const user =rowsuser.rows;
+      return {  user ,camera};
     } catch (error) {
       console.error("Error retrieving cameras by IDs", error);
       throw new Error("Internal server error");
     }
   }
-  
 }
 
 module.exports = { CamerasModel };

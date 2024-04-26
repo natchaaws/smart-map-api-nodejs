@@ -247,13 +247,16 @@ const addLiveCamera = async (req, res) => {
 const getAllCameraById = async (req, res) => {
   try {
     // Ensure req.body is an array of cameras
-    const cameras = Array.isArray(req.body.cameras) ? req.body.cameras : [req.body.cameras];
+    //const cameras = Array.isArray(req.body.cameras) ? req.body.cameras : [req.body.cameras];
+    const { userId } = req.body;
 
-    // Extract camera IDs
-    const cameraIds = cameras.map((camera) => camera.camera_id);
+    // Check if userId is provided
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
 
-    // Get camera data by IDs
-    const camerasData = await CamerasModel.getCamerasByIds(cameraIds);
+
+    const camerasData = await CamerasModel.getCamerasByIds(userId);
 
     res.json({ success: true, status: 200, data: camerasData });
     console.log("Show Camera Successfully!");
