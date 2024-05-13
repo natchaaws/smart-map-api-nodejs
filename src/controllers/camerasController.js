@@ -227,13 +227,8 @@ const addLiveCamera = async (req, res) => {
   try {
     const Values = req.body;
     const LiveCamera = await CamerasModel.addLiveCamera(Values);
-    console.log({ status: 200, success: true, message: "successfully!" });
-    res.status(200).json({
-      status: 200,
-      success: true,
-      message: "successfully!",
-      Camera: LiveCamera,
-    });
+    //console.log({ status: 200, success: true, message: "successfully!" });
+    res.status(200).json( LiveCamera);
   } catch (error) {
     console.error("Error saving Camera data:", error);
     res.status(500).json({
@@ -248,7 +243,7 @@ const getAllCameraById = async (req, res) => {
   try {
     // Ensure req.body is an array of cameras
     //const cameras = Array.isArray(req.body.cameras) ? req.body.cameras : [req.body.cameras];
-    const { userId } = req.body;
+ const { userId } = req.body;
 
     // Check if userId is provided
     if (!userId) {
