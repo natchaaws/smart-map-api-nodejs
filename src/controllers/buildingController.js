@@ -170,6 +170,53 @@ const getFloorPage = async (req, res) => {
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 };
+
+/* Location For Table */
+const getLocationPage = async (req, res) => {
+  const floor_id = req.body.floor_id;
+  const page = parseInt(req.body.page) || 1;
+  const perPage = parseInt(req.body.perPage) || 10;
+  const searchWord = req.body.searchWord;
+
+  try {
+    const LocationPage = await BulidingModel.getLocationPage(
+      floor_id,
+      page,
+      perPage,
+      searchWord
+    );
+    res.json(LocationPage);
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+};
+
+/* Bulid For map */
+
+const getImgByFloorId = async (req, res) => {
+  const floor_id = req.body.floor_id;
+  try {
+    const Floor = await BulidingModel.getImgByFloorId(floor_id);
+    res.json(Floor);
+    console.log("Show ImgByFloorId Successfully!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const getPositionByFloorId = async (req, res) => {
+  const floor_id = req.body.floor_id;
+  try {
+    const FloorLocation = await BulidingModel.getPositionByFloorId(floor_id);
+    res.json(FloorLocation);
+    console.log("Show getPositionByFloorId Successfully!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 /* Bulid For map */
 
 const getBuildOnMap = async (req, res) => {
@@ -177,6 +224,18 @@ const getBuildOnMap = async (req, res) => {
     const Build = await BulidingModel.getBuildOnMap();
     res.json(Build);
     console.log("Show BuildOnMap Successfully!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const getFloorSelect = async (req, res) => {
+  const id = req.body.building_id;
+  try {
+    const FloorSelect = await BulidingModel.getFloorSelect(id);
+    res.json(FloorSelect);
+    console.log("Show getFloorSelect Successfully!");
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -192,5 +251,9 @@ module.exports = {
   editLocationFloor,
   getBulidPage,
   getFloorPage,
+  getLocationPage,
+  getImgByFloorId,
+  getPositionByFloorId,
   getBuildOnMap,
+  getFloorSelect,
 };

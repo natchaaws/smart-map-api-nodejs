@@ -63,7 +63,26 @@ module.exports = (app) => {
     upload.none(),
     buildingController.getFloorPage
   );
+  app.post(
+    "/LocationPage",
+    upload.none(),
+    buildingController.getLocationPage
+  );
+
+  app.post(
+    "/imgByFloorId",
+    upload.none(),
+    buildingController.getImgByFloorId
+  );
+  app.post(
+    "/PositionById",
+    upload.none(),
+    buildingController.getPositionByFloorId
+  );
+
+
   app.post("/getBuildOnMap", upload.none(),buildingController.getBuildOnMap);
+  app.post("/getFloorById", upload.none(),buildingController.getFloorSelect);
 
   // cameras
   app.get("/getCamera", camerasController.getAllCameras);

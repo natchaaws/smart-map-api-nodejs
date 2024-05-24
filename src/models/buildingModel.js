@@ -106,31 +106,38 @@ class BulidingModel {
 
   /* LocationFloor */
   static async createLocationFloor(LocationfloorValues) {
-    const { camera_name, rtsp_path, postion_x, postion_y, floor_id } =
+    const { camera_name, rtsp_path, position_x, position_y, floor_id } =
       LocationfloorValues;
     const query = `
-    INSERT INTO public.location_onfloor(
-        camera_name, rtsp_path, postion_x, postion_y, floor_id)
+    INSERT INTO public.building_location_onfloor(
+        camera_name, rtsp_path, position_x, position_y, floor_id)
         VALUES ($1, $2, $3,$4,$5);`;
-    const values = [camera_name, rtsp_path, postion_x, postion_y, floor_id];
+    const values = [camera_name, rtsp_path, position_x, position_y, floor_id];
 
     const result = await pool.query(query, values);
     return result.rows[0];
   }
 
   static async editLocationFloor(LocationfloorValues) {
-    const { camera_name, rtsp_path, postion_x, postion_y, floor_id, id } =
+    const { camera_name, rtsp_path, position_x, position_y, floor_id, id } =
       LocationfloorValues;
     const query = `
-        UPDATE public.location_onfloor
+        UPDATE public.building_location_onfloor
             SET
             camera_name = $1, 
             rtsp_path = $2, 
-            postion_x = $3,
-            postion_y = $4, floor_id= $5
+            position_x = $3,
+            position_y = $4, floor_id= $5
         WHERE id = $6 RETURNING id
    `;
-    const values = [camera_name, rtsp_path, postion_x, postion_y, floor_id, id];
+    const values = [
+      camera_name,
+      rtsp_path,
+      position_x,
+      position_y,
+      floor_id,
+      id,
+    ];
 
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -248,6 +255,110 @@ class BulidingModel {
     }
   }
 
+  /* Location For Table */
+  static async getLocationPage(floor_id, page, perPage, searchWord) {
+    const offset = (page - 1) * perPage;
+    const whereClause = `(floor_id = $1) AND (camera_name ILIKE $2 OR $2 IS NULL)`;
+
+    const query = `
+    SELECT id, camera_name, rtsp_path, position_x, position_y, floor_id
+    FROM public.building_location_onfloor
+        WHERE ${whereClause}
+        ORDER BY id ASC
+        LIMIT $3 OFFSET $4;
+    `;
+    const search = searchWord ? `%${searchWord}%` : null;
+
+    try {
+      const result = await pool.query(query, [
+        floor_id,
+        search,
+        perPage,
+        offset,
+      ]);
+      const data = result.rows;
+
+      const totalCountQuery = `SELECT COUNT(*) FROM public.building_location_onfloor WHERE ${whereClause}`;
+      const totalCountResult = await pool.query(totalCountQuery, [
+        floor_id,
+        search,
+      ]);
+      const total = parseInt(totalCountResult.rows[0].count);
+
+      const dataResult = data.map((row, index) => {
+        const number = offset + index + 1;
+        return {
+          no: number,
+          ...row,
+        };
+      });
+
+      // Fetch building marker data
+      const buildingMarkerQuery = `
+      SELECT bf.id, bf.name,  bf.floor,
+      bm.id AS building_id, bm.name AS building_name
+        FROM public.building_floor AS bf
+        JOIN public.building_marker AS bm ON bf.building_id = bm.id
+        WHERE bf.id = $1;
+        `;
+      const buildingMarkerResult = await pool.query(buildingMarkerQuery, [
+        floor_id,
+      ]);
+      const buildingMarker = buildingMarkerResult.rows[0];
+
+      return {
+        success: true,
+        search,
+        floor_id,
+        result: {
+          page,
+          perPage,
+          totalPages: Math.ceil(total / perPage),
+          total,
+          building: buildingMarker,
+          data: dataResult,
+        },
+      };
+    } catch (error) {
+      console.error("Error executing query", error);
+      throw new Error("Internal server error");
+    }
+  }
+
+  /* Floor show Image */
+  static async getImgByFloorId(floor_id) {
+    const query = `
+    SELECT id, name, build_img, building_id, floor
+	FROM public.building_floor
+    WHERE id =$1`;
+
+    const result = await pool.query(query, [floor_id]);
+
+    return { success: true, status: 200, data: result.rows[0] };
+  }
+
+  /* Floor  Position  show Image */
+  static async getPositionByFloorId(floor_id) {
+    const query = `
+    SELECT id, name, build_img, building_id, floor
+    FROM public.building_floor
+    WHERE id =$1`;
+
+    const result = await pool.query(query, [floor_id]);
+
+    const queryLocation = `
+        SELECT id, camera_name, rtsp_path, position_x, position_y, floor_id
+        FROM public.building_location_onfloor
+        where floor_id =$1`;
+    const resultLocation = await pool.query(queryLocation, [floor_id]);
+
+    return {
+      success: true,
+      status: 200,
+      data: { building: result.rows[0], location: resultLocation.rows },
+    };
+  }
+
   /* Bulid For map */
   static async getBuildOnMap() {
     const query = `
@@ -261,6 +372,29 @@ class BulidingModel {
     const total = parseInt(totalCountResult.rows[0].count);
 
     return { success: true, status: 200, total, data: result.rows };
+  }
+
+  static async getFloorSelect(building_id) {
+    const query = `
+    SELECT 
+      floor,id, name,  
+      building_id
+    FROM public.building_floor
+    WHERE building_id = $1
+      order by floor asc
+        ;`;
+
+    const result = await pool.query(query, [building_id]);
+
+    const totalCountQuery = `SELECT COUNT(*) FROM public.building_floor WHERE building_id = $1 `;
+    const totalCountResult = await pool.query(totalCountQuery, [building_id]);
+    const total = parseInt(totalCountResult.rows[0].count);
+
+    return { success: true, status: 200, total, data: result.rows };
+  }
+
+  static async getFloorImg() {
+    
   }
 }
 
