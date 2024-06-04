@@ -7,10 +7,10 @@ const filterController = require("../controllers/filterController.js");
 const camerasController = require("../controllers/camerasController.js");
 const buildingController = require("../controllers/buildingController.js");
 const streamController = require("../controllers/streamController.js");
-const login = require("../controllers/loginController");
+// const login = require("../controllers/loginController");
 module.exports = (app) => {
   // app.use(Camera);
-  app.use(login);
+ // app.use(login);
 
   // filter
   app.post(
