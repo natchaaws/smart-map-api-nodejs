@@ -39,6 +39,10 @@ class CamerasModel {
       camera_lat,
       camera_lng,
       district_id,
+      geography_id,
+      province_id,
+      amphure_id,
+      tambon_id,
       status,
       ip_address,
       port,
@@ -46,11 +50,12 @@ class CamerasModel {
     } = camerasValues;
 
     const query = `INSERT INTO public.camera(
-     name, location, rtsp_path, 
+      name, location, rtsp_path, 
       camera_lat, camera_lng, district_id, 
+      geography_id, province_id, amphure_id, tambon_id,
       status, ip_address, port, 
       created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
     const values = [
       name,
       location,
@@ -58,6 +63,10 @@ class CamerasModel {
       camera_lat,
       camera_lng,
       district_id,
+      geography_id,
+      province_id,
+      amphure_id,
+      tambon_id,
       status,
       ip_address,
       port,
@@ -75,11 +84,15 @@ class CamerasModel {
       camera_lat,
       camera_lng,
       district_id,
+      geography_id,
+      province_id,
+      amphure_id,
+      tambon_id,
       status,
       ip_address,
       port,
       modified_by,
-      camera_id
+      camera_id,
     } = camerasEdit;
 
     const query = `UPDATE public.camera
@@ -89,13 +102,18 @@ class CamerasModel {
       rtsp_path= $3, 
       camera_lat = $4, 
       camera_lng = $5,
-      district_id = $6, 
-      ip_address = $7, 
-      port = $8, 
-      modified_by= $9, 
+      district_id = $6,
+      geography_id = $7,
+      province_id = $8,
+      amphure_id = $9,
+      tambon_id = $10, 
+      ip_address = $11, 
+      port = $12, 
+      modified_by= $13, 
       modified_date= NOW(),
-      status = $10
-    WHERE camera_id = $11 RETURNING camera_id, modified_by`;
+      status = $14
+      WHERE camera_id = $15 
+      RETURNING camera_id, modified_by`;
     const values = [
       name,
       location,
@@ -103,6 +121,10 @@ class CamerasModel {
       camera_lat,
       camera_lng,
       district_id,
+      geography_id,
+      province_id,
+      amphure_id,
+      tambon_id,
       ip_address,
       port,
       modified_by,
@@ -149,38 +171,63 @@ class CamerasModel {
 
   static async getCamerasPage(page, perPage, searchWord) {
     const offset = (page - 1) * perPage;
-  
+
     const whereClause = `
-      (c.name ILIKE $1 OR $1 IS NULL) 
-      OR (d.name ILIKE $1 OR $1 IS NULL)
+      (c.name ILIKE $1 OR $1 IS NULL) OR 
+      (d.name ILIKE $1 OR $1 IS NULL) OR 
+      (tambon.name_th ILIKE $1 OR $1 IS NULL) OR 
+      (amphures.name_th ILIKE $1 OR $1 IS NULL) OR 
+      (provinces.name_th ILIKE $1 OR $1 IS NULL) 
     `;
-  
+
     const query = `
-      SELECT c.camera_id, c.name, c.location, 
-        c.rtsp_path, c.camera_lat, c.camera_lng, 
-        c.district_id, 
-        d.id AS district_id, d.name AS district_name,
-        c.status, c.ip_address, 
-        c.port, c.created_by, c.created_date, 
-        c.modified_by, c.modified_date,
-        c.is_delete
-        
-      FROM public.camera AS c
-      LEFT JOIN public.district AS d ON c.district_id = d.id
-      WHERE ${whereClause}
-      ORDER BY c.camera_id ASC 
-      LIMIT $2 OFFSET $3;
+      SELECT 
+      c.camera_id, c.name, c.location, 
+      c.rtsp_path, c.camera_lat, c.camera_lng, 
+      c.district_id, d.id AS district_id, 
+      d.name AS district_name, 
+      c.status, c.ip_address, c.port,  
+      c.geography_id, geographies.id AS geography_id, geographies.name AS geography_name,
+      c.province_id, provinces.id AS province_id,  provinces.name_th AS province_name, 
+      c.amphure_id, amphures.id AS amphure_id, amphures.name_th AS amphure_name,  
+      c.tambon_id,  tambon.name_th AS tambon_name, 
+      c.created_by, c.created_date, 
+      c.modified_by, c.modified_date, c.is_delete
+        FROM 
+            public.camera AS c
+        LEFT JOIN 
+            public.district AS d ON c.district_id = d.id
+        LEFT JOIN 
+            public.a_tambon AS tambon ON c.tambon_id = tambon.id
+        LEFT JOIN 
+            public.a_amphures AS amphures ON c.amphure_id = amphures.id
+        LEFT JOIN 
+            public.a_provinces AS provinces ON c.province_id = provinces.id
+        LEFT JOIN 
+            public.a_geographies AS geographies ON c.geography_id = geographies.id
+        WHERE ${whereClause} 
+        ORDER BY c.camera_id ASC LIMIT $2 OFFSET $3;
     `;
-  
+
     const search = searchWord ? `%${searchWord}%` : null;
-  
+
     try {
       const result = await pool.query(query, [search, perPage, offset]);
-  
+
       const data = result.rows;
-  
+
       // Include d alias in COUNT query as well
-      const totalCountQuery = `SELECT COUNT(*) FROM public.camera AS c LEFT JOIN public.district AS d ON c.district_id = d.id WHERE ${whereClause}`;
+      const totalCountQuery = `
+        SELECT COUNT(*) FROM public.camera AS c LEFT JOIN public.district AS d ON c.district_id = d.id  
+          LEFT JOIN  
+            public.a_tambon AS tambon ON c.tambon_id = tambon.id
+          LEFT JOIN 
+            public.a_amphures AS amphures ON c.amphure_id = amphures.id
+          LEFT JOIN 
+            public.a_provinces AS provinces ON c.province_id = provinces.id
+          LEFT JOIN 
+            public.a_geographies AS geographies ON c.geography_id = geographies.id 
+        WHERE ${whereClause}`;
       const totalCountResult = await pool.query(totalCountQuery, [search]);
       const total = parseInt(totalCountResult.rows[0].count);
       const dataResult = data.map((row, index) => {
@@ -206,10 +253,9 @@ class CamerasModel {
       throw new Error("Internal server error");
     }
   }
-  
+
   static async addLiveCamera(Values) {
-    const { user_id, layout, cameras, created_by, modified_by } =
-      Values;
+    const { user_id, layout, cameras, created_by, modified_by } = Values;
 
     const existingUserQuery = `
       SELECT live_id, user_id
@@ -221,7 +267,8 @@ class CamerasModel {
     if (existingUser.rows.length > 0) {
       // update
       // If a user with the same username already exists, respond with an error message
-      console.log({ status: 400, message: "มีชื่อผู้ใช้แล้ว กรุณาลองใหม่" });
+      console.log({ status: 400, message: "ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว" });
+
       const queryUpdate = `
         UPDATE public.live_view
           SET 
@@ -230,11 +277,20 @@ class CamerasModel {
           modified_by= $3, 
           modified_date= NOW()
       WHERE user_id = $4 RETURNING user_id,live_id ;`;
-      const valuesUpdate = [layout, JSON.stringify(cameras), modified_by, user_id ];
+      const valuesUpdate = [
+        layout,
+        JSON.stringify(cameras),
+        modified_by,
+        user_id,
+      ];
 
       const result = await pool.query(queryUpdate, valuesUpdate);
-      return result.rows[0];
-
+      return {
+        status: 200,
+        success: true,
+        message: "Update successfully!",
+        Camera: result.rows[0],
+      } ;
     } else {
       // insert
       const queryInsert = `
@@ -245,44 +301,74 @@ class CamerasModel {
               created_by
               ) 
           VALUES ($1, $2, $3, $4)  RETURNING *;`;
-      const valuesInsert = [user_id, layout, JSON.stringify(cameras), created_by];
+      const valuesInsert = [
+        user_id,
+        layout,
+        JSON.stringify(cameras),
+        created_by,
+      ];
 
       const result = await pool.query(queryInsert, valuesInsert);
-      return result.rows[0];
+      return {
+        status: 200,
+        success: true,
+        message: "Add live_view successfully!",
+        Camera: result.rows[0],
+      };
     }
   }
 
-  static async getCamerasByIds(cameraIds) {
-    // Create a comma-separated string of the camera IDs for the WHERE IN clause
-    const cameraIdString = cameraIds.join(',');
+  static async getCamerasByIds(userId) {
+    const userquery = `
+      SELECT lv.live_id, lv.user_id, 
+          lv.layout, 
+          u.username, u.email, u.role_id
+      FROM public.live_view lv
+          JOIN public.users u ON lv.user_id = u.user_id
+      WHERE lv.user_id = $1;
+          `;
+
+    const query = `SELECT 
+        c.camera_id, c.name, c.location, c.rtsp_path, 
+        c.camera_lat, c.camera_lng, c.district_id, c.status, 
+        c.ip_address, c.port, c.created_by, c.created_date, 
+        c.modified_by, c.modified_date, c.deleted_by, 
+        c.deleted_date, c.is_delete,        
+        t.name_th AS tambon_name,
+        a.name_th AS amphure_name,
+        p.name_th AS province_name,
+        g.name AS geography_name
+
+        FROM public.camera c
+        JOIN (
+            SELECT lv.live_id, lv.user_id, jsonb_array_elements(lv.cameras) ->> 'camera_id' AS camera_id
+            FROM public.live_view lv
+            WHERE lv.user_id = $1
+        ) lv ON lv.camera_id::int = c.camera_id
+        
+        LEFT JOIN 
+          public.a_tambon t ON c.tambon_id = t.id
+      LEFT JOIN 
+          public.a_amphures a ON c.amphure_id = a.id
+      LEFT JOIN 
+          public.a_provinces p ON c.province_id = p.id
+      LEFT JOIN 
+          public.a_geographies g ON c.geography_id = g.id;
   
-    const query = `
-    SELECT 
-      lv.live_id, lv.user_id, lv.layout, lv.cameras,
-      c.camera_id, c.name, c.location, c.rtsp_path, 
-      c.camera_lat, c.camera_lng, c.district_id, c.status, 
-      c.ip_address, c.port, c.created_by AS camera_created_by, 
-      c.created_date AS camera_created_date, c.modified_by AS camera_modified_by, 
-      c.modified_date AS camera_modified_date, c.deleted_by AS camera_deleted_by, 
-      c.deleted_date AS camera_deleted_date, c.is_delete AS camera_is_delete,
-      lv.created_by AS live_created_by, lv.created_date AS live_created_date, 
-      lv.modified_by AS live_modified_by, lv.modified_date AS live_modified_date, 
-      lv.deleted_by AS live_deleted_by, lv.deleted_date AS live_deleted_date, 
-      lv.is_delete AS live_is_delete
-    FROM public.live_view lv
-    JOIN public.camera c ON lv.cameras @> '[{"camera_id": ' || c.camera_id || '}]'
-    WHERE c.camera_id IN (${cameraIdString});  -- Properly formatted IN clause
-    `;
-  
+  `;
+
     try {
-      const { rows } = await pool.query(query);
-      return rows;
+      const result = await pool.query(query, [userId]);
+      const camera = result.rows;
+
+      const rowsuser = await pool.query(userquery, [userId]);
+      const user = rowsuser.rows;
+      return { user, camera };
     } catch (error) {
       console.error("Error retrieving cameras by IDs", error);
       throw new Error("Internal server error");
     }
   }
-  
 }
 
 module.exports = { CamerasModel };
