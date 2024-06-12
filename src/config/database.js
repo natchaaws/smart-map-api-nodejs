@@ -14,7 +14,7 @@ pool.connect((err, client, done) => {
     if (err) {
         console.error('Error connecting to the database:', err);
     } else {
-        console.log('Connected to the database' , process.env.HOST);
+        console.log('Connected to the database' , process.env.HOST,process.env.PORT_DB);
         done();
     }
 });

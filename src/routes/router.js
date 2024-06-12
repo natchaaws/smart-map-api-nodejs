@@ -3,6 +3,8 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+const permissionsController = require("../controllers/permissionsController.js");
+
 const filterController = require("../controllers/filterController.js");
 const camerasController = require("../controllers/camerasController.js");
 const buildingController = require("../controllers/buildingController.js");
@@ -11,7 +13,8 @@ const streamController = require("../controllers/streamController.js");
 module.exports = (app) => {
   // app.use(Camera);
  // app.use(login);
-
+ app.get("/getRole", permissionsController.getRole);
+ app.post("/getPermissions", permissionsController.getPermistion);
   // filter
   app.post(
     "/filterGeographies",

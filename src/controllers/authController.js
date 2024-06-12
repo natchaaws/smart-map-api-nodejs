@@ -4,7 +4,15 @@ const { getUserByUsername, createUser } = require("../models/userModel");
 const pool = require("../config/database");
 const register = async (req, res) => {
   try {
-    const { username, password, role_id: roleIdFromBody } = req.body;
+    const {
+      name,
+      lastname,
+      tel,
+      email,
+      username,
+      password,
+      role_id: roleIdFromBody,
+    } = req.body;
     const role_id = parseInt(roleIdFromBody) || 3;
 
     // Determine who created the user based on role_id
@@ -26,11 +34,16 @@ const register = async (req, res) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ message: "Username already exists. Please try again." });
+        .json({ success: false, status: 400, message: "Username already exists. Please try again." });
+    
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user_id = await createUser(
+      name,
+      lastname,
+      tel,
+      email,
       username,
       hashedPassword,
       role_id,
@@ -38,6 +51,7 @@ const register = async (req, res) => {
     );
 
     res.status(201).json({
+      success: true,
       status: 201,
       message: "User registered successfully",
       id: user_id,
@@ -99,16 +113,13 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        status: 500,
-        success: false,
-        message: "Error logging in",
-        error,
-      });
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Error logging in",
+      error,
+    });
   }
-  
 };
 
 const verify = (req, res) => {
@@ -122,14 +133,12 @@ const verify = (req, res) => {
 
   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
-      return res
-        .status(401)
-        .json({
-          status: 401,
-          success: false,
-          message: "Token is invalid",
-          err,
-        });
+      return res.status(401).json({
+        status: 401,
+        success: false,
+        message: "Token is invalid",
+        err,
+      });
     }
 
     res.json({
