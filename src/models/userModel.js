@@ -40,8 +40,34 @@ const getUserById = async (user_id) => {
   return rows[0];
 };
 
+const getUser = async (user_id) => {
+  const query = `SELECT 
+    u.user_id, 
+    u.username, 
+    u.name, 
+    u.lastname, 
+    u.tel, 
+    u.email, 
+    u.role_id,  r.name AS role_name,
+    u.is_delete
+   
+FROM 
+    public.users u
+JOIN 
+    public.role r
+ON 
+    u.role_id = r.id
+WHERE 
+    u.user_id = $1 
+    AND u.is_delete = false;
+`;
+  const { rows } = await pool.query(query, [user_id]);
+  return rows[0];
+};
+
 module.exports = {
   getUserByUsername,
   createUser,
   getUserById,
+  getUser
 };

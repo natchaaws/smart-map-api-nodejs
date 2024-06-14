@@ -1,6 +1,10 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { getUserByUsername, createUser } = require("../models/userModel");
+const {
+  getUserByUsername,
+  createUser,
+  getUser,
+} = require("../models/userModel");
 const pool = require("../config/database");
 const register = async (req, res) => {
   try {
@@ -154,8 +158,27 @@ const verify = (req, res) => {
   });
 };
 
+const userByid = async (req, res) => {
+  try {
+    const {user_id} = req.body;
+    const User = await getUser(user_id);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      message: "User show successfully",
+      data: User,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, status: 500, message: "Error registering user" });
+  }
+};
+
 module.exports = {
   register,
   login,
   verify,
+  userByid
 };

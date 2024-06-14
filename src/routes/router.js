@@ -15,6 +15,7 @@ module.exports = (app) => {
  // app.use(login);
  app.get("/getRole", permissionsController.getRole);
  app.post("/getPermissions", permissionsController.getPermistion);
+
   // filter
   app.post(
     "/filterGeographies",
