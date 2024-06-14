@@ -32,10 +32,11 @@ const register = async (req, res) => {
     // Check if the username already exists in the database
     const existingUser = await getUserByUsername(username);
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ success: false, status: 400, message: "Username already exists. Please try again." });
-    
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "Username already exists. Please try again.",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -58,7 +59,9 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error registering user" });
+    res
+      .status(500)
+      .json({ success: false, status: 500, message: "Error registering user" });
   }
 };
 
