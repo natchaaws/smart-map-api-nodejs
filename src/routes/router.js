@@ -25,7 +25,7 @@ module.exports = (app) => {
   app.post("/filterProvinces", upload.none(), filterController.getProvinces);
   app.post("/filterAmphures", upload.none(), filterController.getAmphures);
   app.post("/filterTambons", upload.none(), filterController.getTambons);
-
+  app.post("/filterCameras", upload.none(), filterController.getCameraSelect);
   // Building
   app.post(
     "/addBuildMark",

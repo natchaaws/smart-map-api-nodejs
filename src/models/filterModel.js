@@ -51,12 +51,29 @@ class filterModel {
 
     const { rows } = await pool.query(query, [amphure_id]);
 
-   
     const totalCountQuery = `SELECT COUNT(*)  FROM public.a_tambon d where d.amphure_id = $1 `;
     const totalCountResult = await pool.query(totalCountQuery, [amphure_id]);
     const total = parseInt(totalCountResult.rows[0].count);
     return { success: true, status: 200, total, data: rows };
-    
+  }
+
+  static async getCameraSelects(province_id, amphure_id, tambol_id) {
+    const query = `
+        SELECT camera_id, name, status
+      FROM public.camera  
+      where 	is_delete ='false' AND
+      province_id = $1 AND 
+      amphure_id = $2 AND 
+      tambon_id = $3 
+ ; `;
+
+    const { rows } = await pool.query(query, [
+      province_id,
+      amphure_id,
+      tambol_id,
+    ]);
+
+    return { success: true, status: 200, data: rows };
   }
 }
 module.exports = filterModel;
