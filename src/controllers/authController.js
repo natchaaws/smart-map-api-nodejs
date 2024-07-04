@@ -103,7 +103,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username, role_id: user.role_id },
       process.env.SECRET_KEY,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
     await pool.query(
       "INSERT INTO login_logs (user_id, login_status, login_ip_address, description) VALUES ($1, $2, $3, $4)",

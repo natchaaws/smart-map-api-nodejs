@@ -127,7 +127,8 @@ class BulidingModel {
             camera_name = $1, 
             rtsp_path = $2, 
             position_x = $3,
-            position_y = $4, floor_id= $5
+            position_y = $4, 
+            floor_id= $5
         WHERE id = $6 RETURNING id
    `;
     const values = [

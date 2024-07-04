@@ -168,7 +168,7 @@ const getCameraByidDistrict = async (req, res) => {
     console.log("Show Camera by District Successfully!");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({  status: 500,success: false, message: "Internal server error" });
   }
 };
 
@@ -179,7 +179,7 @@ const getAllCameras = async (req, res) => {
     console.log("Show Camera Successfully!");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ status: 500, success: false, message: "Internal server error" });
   }
 };
 
@@ -190,7 +190,7 @@ const getDistrict = async (req, res) => {
     console.log("Show District Successfully!");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({  status: 500,success: false, message: "Internal server error" });
   }
 };
 
@@ -202,7 +202,7 @@ const getAllPolygon = async (req, res) => {
     console.log("Show Camera Successfully!");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({  status: 500,success: false, message: "Internal server error" });
   }
 };
 
@@ -257,7 +257,7 @@ const getAllCameraById = async (req, res) => {
     console.log("Show Camera Successfully!");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ status: 500, success: false, message: "Internal server error" });
   }
 };
 

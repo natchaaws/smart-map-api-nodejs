@@ -267,7 +267,10 @@ class CamerasModel {
     if (existingUser.rows.length > 0) {
       // update
       // If a user with the same username already exists, respond with an error message
-      console.log({ status: 400, message: "ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว" });
+      console.log({
+        status: 400,
+        message: "ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว",
+      });
 
       const queryUpdate = `
         UPDATE public.live_view
@@ -290,7 +293,7 @@ class CamerasModel {
         success: true,
         message: "Update successfully!",
         Camera: result.rows[0],
-      } ;
+      };
     } else {
       // insert
       const queryInsert = `
@@ -362,7 +365,7 @@ class CamerasModel {
       const camera = result.rows;
 
       const rowsuser = await pool.query(userquery, [userId]);
-      const user = rowsuser.rows;
+      const user = rowsuser.rows[0];
       return { user, camera };
     } catch (error) {
       console.error("Error retrieving cameras by IDs", error);

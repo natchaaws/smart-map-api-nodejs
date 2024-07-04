@@ -112,10 +112,12 @@ const createLocationFloor = async (req, res) => {
 
 const editLocationFloor = async (req, res) => {
   const LocationfloorValues = req.body;
+  //console.log(LocationfloorValues);
   try {
     const LocationFloor = await BulidingModel.editLocationFloor(
       LocationfloorValues
     );
+    console.log("edit LocationFloor successfully!");
     res.status(200).json({
       status: 200,
       success: true,
