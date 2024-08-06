@@ -1,27 +1,15 @@
+// src/models/userModel.js
+
 const pool = require("../config/database");
+class usersModel {
+  static async getUserByUsername(username) {
+    const query =
+      "SELECT * FROM users WHERE username = $1 AND is_delete = false";
+    const { rows } = await pool.query(query, [username]);
+    return rows[0];
+  }
 
-const getUserByUsername = async (username) => {
-  const query = "SELECT * FROM users WHERE username = $1 AND is_delete = false";
-  const { rows } = await pool.query(query, [username]);
-  return rows[0];
-};
-
-const createUser = async (
-  name,
-  lastname,
-  tel,
-  email,
-  username,
-  hashedPassword,
-  role_id,
-  created_by
-) => {
-  const query = `
-    INSERT INTO users (name,lastname,tel,
-    email,username, password, role_id, created_by)
-    VALUES ($1, $2, $3, $4,$5, $6, $7, $8) RETURNING user_id
-  `;
-  const { rows } = await pool.query(query, [
+  static async createUser(
     name,
     lastname,
     tel,
@@ -29,19 +17,34 @@ const createUser = async (
     username,
     hashedPassword,
     role_id,
-    created_by,
-  ]);
-  return rows[0].user_id;
-};
+    created_by
+  ) {
+    const query = `
+    INSERT INTO users (name,lastname,tel,
+    email,username, password, role_id, created_by)
+    VALUES ($1, $2, $3, $4,$5, $6, $7, $8) RETURNING user_id
+  `;
+    const { rows } = await pool.query(query, [
+      name,
+      lastname,
+      tel,
+      email,
+      username,
+      hashedPassword,
+      role_id,
+      created_by,
+    ]);
+    return rows[0].user_id;
+  }
 
-const getUserById = async (user_id) => {
-  const query = "SELECT * FROM users WHERE user_id = $1";
-  const { rows } = await pool.query(query, [user_id]);
-  return rows[0];
-};
+  static async getUserById(user_id) {
+    const query = "SELECT * FROM users WHERE user_id = $1";
+    const { rows } = await pool.query(query, [user_id]);
+    return rows[0];
+  }
 
-const getUser = async (user_id) => {
-  const query = `SELECT 
+  static async getUser(user_id) {
+    const query = `SELECT 
     u.user_id, 
     u.username, 
     u.name, 
@@ -61,13 +64,138 @@ WHERE
     u.user_id = $1 
     AND u.is_delete = false;
 `;
-  const { rows } = await pool.query(query, [user_id]);
-  return rows[0];
-};
+    const { rows } = await pool.query(query, [user_id]);
+    return rows[0];
+  }
 
-module.exports = {
-  getUserByUsername,
-  createUser,
-  getUserById,
-  getUser
-};
+  static async getAllUser(userValues) {
+    const { page, perPage, searchWord, searchRole } = userValues;
+    const offset = (page - 1) * perPage;
+    const whereClause = `
+    ((u.username ILIKE $1 OR $1 IS NULL) OR
+    (u.name ILIKE $1 OR $1 IS NULL) OR
+    (u.lastname ILIKE $1 OR $1 IS NULL) OR
+    (u.tel ILIKE $1 OR $1 IS NULL) OR
+    (u.email ILIKE $1 OR $1 IS NULL))
+`;
+
+    const whereRole = `(u.role_id = $2 OR $2 IS NULL)`;
+
+    const query = `SELECT 
+          u.user_id, 
+          u.username, 
+          u.name, 
+          u.lastname, 
+          u.tel, 
+          u.email, 
+          u.role_id,  r.name AS role_name,
+          u.is_delete
+        FROM  
+          public.users u
+        JOIN 
+          public.role r
+        ON 
+          u.role_id = r.id
+        WHERE 
+          ${whereClause} AND  ${whereRole} 
+       ORDER BY  
+          u.is_delete ASC, u.user_id ASC  LIMIT $3 OFFSET $4;  `;
+
+    const search = searchWord ? `%${searchWord}%` : null;
+    const search_role = searchRole || null;
+    try {
+      const result = await pool.query(query, [
+        search,
+        search_role,
+        perPage,
+        offset,
+      ]);
+      const data = result.rows;
+
+      const totalCountQuery = `SELECT COUNT(*)
+        FROM  
+          public.users u
+        JOIN 
+          public.role r
+        ON 
+          u.role_id = r.id
+        WHERE 
+          ${whereClause} AND  ${whereRole} 
+      `;
+      const totalCountResult = await pool.query(totalCountQuery, [
+        search,
+        search_role,
+      ]);
+      const total = parseInt(totalCountResult.rows[0].count);
+
+      const dataResult = data.map((row, index) => {
+        const number = offset + index + 1;
+        return {
+          no: number,
+          ...row,
+        };
+      });
+      return {
+        success: true,
+        search,
+        roleType: search_role,
+        result: {
+          page,
+          perPage,
+          totalPages: Math.ceil(total / perPage),
+          total,
+          data: dataResult,
+        },
+      };
+    } catch (error) {
+      console.error("Error executing query", error);
+      throw new Error("Internal server error");
+    }
+  }
+
+  static async editUserRole(user_id, newRole) {
+    // Check if user and role exist
+    const userCheckQuery = "SELECT * FROM users WHERE user_id = $1";
+    const roleCheckQuery = "SELECT * FROM role WHERE id = $1";
+
+    const userCheckResult = await pool.query(userCheckQuery, [user_id]);
+    const roleCheckResult = await pool.query(roleCheckQuery, [newRole]);
+
+    if (userCheckResult.rowCount === 0) {
+      throw new Error("User not found");
+    }
+
+    if (roleCheckResult.rowCount === 0) {
+      throw new Error("Role not found");
+    }
+
+    const query = `
+      UPDATE users 
+      SET role_id = $1 
+      WHERE user_id = $2 AND is_delete = false 
+      RETURNING user_id, role_id;
+    `;
+    const { rows } = await pool.query(query, [newRole, user_id]);
+    return rows[0];
+  }
+
+  static async deleteUser(user_id) {
+    // Check if user exists
+    const userCheckQuery = "SELECT * FROM users WHERE user_id = $1";
+    const userCheckResult = await pool.query(userCheckQuery, [user_id]);
+
+    if (userCheckResult.rowCount === 0) {
+      throw new Error("User not found");
+    }
+
+    const query = `
+      UPDATE users 
+      SET is_delete = true 
+      WHERE user_id = $1 
+      RETURNING user_id, is_delete;
+    `;
+    const { rows } = await pool.query(query, [user_id]);
+    return rows[0];
+  }
+}
+module.exports = usersModel;

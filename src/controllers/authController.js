@@ -1,10 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const {
-  getUserByUsername,
-  createUser,
-  getUser,
-} = require("../models/userModel");
+const usersModel = require("../models/userModel");
 const pool = require("../config/database");
 const register = async (req, res) => {
   try {
@@ -34,7 +30,7 @@ const register = async (req, res) => {
     }
 
     // Check if the username already exists in the database
-    const existingUser = await getUserByUsername(username);
+    const existingUser = await usersModel.getUserByUsername(username);
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -44,7 +40,7 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user_id = await createUser(
+    const user_id = await usersModel.createUser(
       name,
       lastname,
       tel,
@@ -72,7 +68,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await getUserByUsername(username);
+    const user = await usersModel.getUserByUsername(username);
     const userIP = req.ip;
 
     if (!user) {
@@ -160,8 +156,8 @@ const verify = (req, res) => {
 
 const userByid = async (req, res) => {
   try {
-    const {user_id} = req.body;
-    const User = await getUser(user_id);
+    const { user_id } = req.body;
+    const User = await usersModel.getUser(user_id);
     res.status(200).json({
       success: true,
       status: 200,
@@ -180,5 +176,5 @@ module.exports = {
   register,
   login,
   verify,
-  userByid
+  userByid,
 };

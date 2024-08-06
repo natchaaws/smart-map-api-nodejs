@@ -9,11 +9,13 @@ const filterController = require("../controllers/filterController.js");
 const camerasController = require("../controllers/camerasController.js");
 const buildingController = require("../controllers/buildingController.js");
 const streamController = require("../controllers/streamController.js");
+const usersController = require("../controllers/usersController.js");
+const notificationsController = require("../controllers/notificationController.js");
 // const login = require("../controllers/loginController");
 module.exports = (app) => {
   // app.use(Camera);
  // app.use(login);
- app.get("/getRole", permissionsController.getRole);
+ app.get("/filterRole", permissionsController.getRole);
  app.post("/getPermissions", permissionsController.getPermistion);
 
   // filter
@@ -25,7 +27,17 @@ module.exports = (app) => {
   app.post("/filterProvinces", upload.none(), filterController.getProvinces);
   app.post("/filterAmphures", upload.none(), filterController.getAmphures);
   app.post("/filterTambons", upload.none(), filterController.getTambons);
+
+  // Noti
+  app.post("/getNoti", upload.none(), notificationsController.getNotifications);
+  app.post("/saveNoti", upload.none(), notificationsController.createNotification);
+
   app.post("/filterCameras", upload.none(), filterController.getCameraSelect);
+
+  app.post("/getUserPage", upload.none(), usersController.getUsersPage);
+  app.post("/editUserRole", upload.none(), usersController.editUserRole);
+  app.post("/deleteUser", upload.none(), usersController.deleteUser);
+
   // Building
   app.post(
     "/addBuildMark",
