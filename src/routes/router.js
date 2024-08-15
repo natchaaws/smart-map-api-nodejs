@@ -29,8 +29,10 @@ module.exports = (app) => {
   app.post("/filterTambons", upload.none(), filterController.getTambons);
 
   // Noti
-  app.post("/getNoti", upload.none(), notificationsController.getNotifications);
+  app.post("/getNoti", upload.none(), notificationsController.getCheckCameraNotifications);
   app.post("/saveNoti", upload.none(), notificationsController.createNotification);
+
+  app.post("/getNotifications", upload.none(), notificationsController. getNotifications);
 
   app.post("/filterCameras", upload.none(), filterController.getCameraSelect);
 

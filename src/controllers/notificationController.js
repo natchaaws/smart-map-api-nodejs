@@ -1,7 +1,7 @@
 // src/controllers/notificationController.js
 const { NotificationsModel } = require("../models/notificationModel");
 
-const getNotifications = async (req, res) => {
+const getCheckCameraNotifications = async (req, res) => {
   const namecamera = req.body.camera;
 
   try {
@@ -18,25 +18,16 @@ const getNotifications = async (req, res) => {
         .json({ success: false, message: "Camera not found", camera_id: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: error.message,
-        camera_id: null || "Internal server error",
-      });
+    res.status(500).json({
+      error: error.message,
+      camera_id: null || "Internal server error",
+    });
   }
 };
 
 const createNotification = async (req, res) => {
-  const {
-    type,
-    camera,
-    plate,
-    country,
-    timestamp_from,
-    cropimg,
-    fullimg,
-  } = req.body;
+  const { type, camera, plate, country, timestamp_from, cropimg, fullimg } =
+    req.body;
 
   try {
     // Retrieve camera_id using the camera name
@@ -74,4 +65,37 @@ const createNotification = async (req, res) => {
   }
 };
 
-module.exports = { getNotifications, createNotification };
+const getNotifications = async (req, res) => {
+  const page = parseInt(req.body.page, 10) || 1;
+  const perPage = parseInt(req.body.perPage, 10) || 3; // Default to 3 per page
+  const type = req.body.type;
+  const camera = req.body.camera;
+  const plate = req.body.plate;
+  try {
+    const notifications = await NotificationsModel.getNotifications({
+      type,
+      camera,
+      plate,
+      page,
+      perPage,
+    });
+    res.json({
+      success: true,
+      page,
+      perPage,
+      search: { type, camera, plate },
+      notifications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+module.exports = {
+  getCheckCameraNotifications,
+  createNotification,
+  getNotifications,
+};
