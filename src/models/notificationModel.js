@@ -56,7 +56,7 @@ class NotificationsModel {
     const resultToday = await pool.query(todayQuery);
     const totalToday = parseInt(resultToday.rows[0].count);
 
-    return  totalToday ;
+    return totalToday;
   }
   static async countSevendays() {
     const Query = `SELECT COUNT(*) 
@@ -65,7 +65,7 @@ class NotificationsModel {
     const result = await pool.query(Query);
     const totalSevenday = parseInt(result.rows[0].count);
 
-    return totalSevenday ;
+    return totalSevenday;
   }
   static async countTypeToday() {
     const query = `WITH distinct_types AS (
@@ -168,13 +168,15 @@ comment, matched_lists
     return {
       dataTimeLoad: new Date().toISOString(), // Add current date-time
       //statistics: { totalToday },
-      page,
-      perPage,
-      totalPages: Math.ceil(total / perPage),
-      total,
+      pagination: {
+        page,
+        perPage,
+        totalPages: Math.ceil(total / perPage),
+        totalItems: total,
+      },
       range: { startDateTime, endDateTime },
       search: { type, camera, plate },
-      notifications: dataResult,
+      data: dataResult,
     };
   }
 }

@@ -100,7 +100,7 @@ const getNotifications = async (req, res) => {
     res.json({
       success: true,
       status: 200,
-      data: {
+      result: {
         statistics: { totalToday, totalSevenday, countType },
         notifications,
       },
