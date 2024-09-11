@@ -33,8 +33,7 @@ class NotificationsModel {
             INSERT INTO public.noti_from_socket 
             (type, map_camera_id, camera, plate, country, timestamp_from, cropimg, fullimg)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING noti_id;
-        `;
+            RETURNING noti_id;`;
 
     // Execute the query with the provided parameters
     const { rows } = await pool.query(query, [
@@ -50,7 +49,7 @@ class NotificationsModel {
     return rows[0].noti_id;
   }
   static async countToday() {
-    const todayQuery = `SELECT CO UNT(*)
+    const todayQuery = `SELECT COUNT(*)
     FROM public.noti_from_socket
     WHERE datetime >= CURRENT_DATE
       AND datetime < CURRENT_DATE + INTERVAL '1 day';`;
