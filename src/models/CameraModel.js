@@ -30,7 +30,7 @@ class CamerasModel {
       },
     };
   }
-
+  // /cameras/camera
   static async createCamera(camerasValues) {
     const {
       name,
@@ -43,6 +43,9 @@ class CamerasModel {
       province_id,
       amphure_id,
       tambon_id,
+      province_name,
+      amphure_name,
+      tambon_name,
       status,
       ip_address,
       port,
@@ -52,10 +55,12 @@ class CamerasModel {
     const query = `INSERT INTO public.camera(
       name, location, rtsp_path, 
       camera_lat, camera_lng, district_id, 
-      geography_id, province_id, amphure_id, tambon_id,
+      geography_id, province_id, amphure_id, tambon_id,province_name,
+      amphure_name,
+      tambon_name,
       status, ip_address, port, 
       created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`;
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17);`;
     const values = [
       name,
       location,
@@ -67,15 +72,19 @@ class CamerasModel {
       province_id,
       amphure_id,
       tambon_id,
+      province_name,
+      amphure_name,
+      tambon_name,
       status,
       ip_address,
       port,
       created_by,
     ];
+
     const result = await pool.query(query, values);
     return result.rows[0]; // Return the newly created employee
   }
-
+// /cameras/camera/:id
   static async editCamera(camerasEdit) {
     const {
       name,
@@ -88,6 +97,9 @@ class CamerasModel {
       province_id,
       amphure_id,
       tambon_id,
+      province_name,
+      amphure_name,
+      tambon_name,
       status,
       ip_address,
       port,
@@ -107,12 +119,15 @@ class CamerasModel {
       province_id = $8,
       amphure_id = $9,
       tambon_id = $10, 
-      ip_address = $11, 
-      port = $12, 
-      modified_by= $13, 
+      province_name = $11,
+      amphure_name= $12,
+      tambon_name= $13,
+      ip_address = $14, 
+      port = $15, 
+      modified_by= $16, 
       modified_date= NOW(),
-      status = $14
-      WHERE camera_id = $15 
+      status = $17
+      WHERE camera_id = $18 
       RETURNING camera_id, modified_by`;
     const values = [
       name,
@@ -125,6 +140,9 @@ class CamerasModel {
       province_id,
       amphure_id,
       tambon_id,
+      province_name,
+      amphure_name,
+      tambon_name,
       ip_address,
       port,
       modified_by,
@@ -169,6 +187,7 @@ class CamerasModel {
     return rows;
   }
 
+  // cameras/page
   static async getCamerasPage(page, perPage, searchWord) {
     const offset = (page - 1) * perPage;
 
@@ -184,15 +203,17 @@ class CamerasModel {
       SELECT 
       c.camera_id, c.name, c.location, 
       c.rtsp_path, c.camera_lat, c.camera_lng, 
+      c.province_name, c.amphure_name, c.tambon_name,
       c.district_id, d.id AS district_id, 
       d.name AS district_name, 
       c.status, c.ip_address, c.port,  
-      c.geography_id, geographies.id AS geography_id, geographies.name AS geography_name,
-      c.province_id, provinces.id AS province_id,  provinces.name_th AS province_name, 
-      c.amphure_id, amphures.id AS amphure_id, amphures.name_th AS amphure_name,  
-      c.tambon_id,  tambon.name_th AS tambon_name, 
+      c.geography_id, geographies.id AS geography_id, geographies.name AS geo_name,
+      c.province_id, provinces.id AS province_id,  provinces.name_th AS pro_name, 
+      c.amphure_id, amphures.id AS amphure_id, amphures.name_th AS amp_name,  
+      c.tambon_id,  tambon.name_th AS tamb_name, 
       c.created_by, c.created_date, 
-      c.modified_by, c.modified_date, c.is_delete
+      c.modified_by, c.modified_date, c.deleted_by, 
+      c.deleted_date,  c.is_delete
         FROM 
             public.camera AS c
         LEFT JOIN 
@@ -230,21 +251,67 @@ class CamerasModel {
         WHERE ${whereClause}`;
       const totalCountResult = await pool.query(totalCountQuery, [search]);
       const total = parseInt(totalCountResult.rows[0].count);
+
       const dataResult = data.map((row, index) => {
         const number = offset + index + 1;
         return {
           no: number,
-          ...row,
+          camera_id: row.camera_id,
+          name: row.name,
+          rtsp_path: row.rtsp_path,
+          camera_lat: row.camera_lat,
+          camera_lng: row.camera_lng,
+          location: row.location,
+          location_camera: {
+            geography: {
+              id: row.geography_id,
+              name: row.geo_name,
+            },
+            provinces: {
+              id: row.province_id,
+              name: row.pro_name,
+            },
+            amphures: {
+              id: row.amphure_id,
+              name: row.amp_name,
+            },
+            tambons: {
+              id: row.tambon_id,
+              name: row.tamb_name,
+            },
+            district: {
+              id: row.district_id,
+              name: row.district_name,
+            },
+            province_name: row.province_name,
+            amphure_name: row.amphure_name,
+            tambon_name: row.tambon_name,
+          },
+          status: row.status || "unknown",  // Default to 'unknown' if null
+          ip_address: row.ip_address || "N/A", // Default to 'N/A' if null
+          port: row.port || "N/A",  // Default to 'N/A' if null
+
+          created_by: row.created_by,
+          created_date: row.created_date,
+          modified_by: row.modified_by,
+          modified_date: row.modified_date,
+          deleted_by: row.deleted_by,
+          deleted_date: row.deleted_date,
+          is_delete: row.is_delete,
         };
       });
       return {
         success: true,
-        search,
+        status: 200,
+        message: "OK",
         result: {
-          page,
-          perPage,
-          totalPages: Math.ceil(total / perPage),
-          total,
+          pagination: {
+            page,
+            perPage,
+            totalPages: Math.ceil(total / perPage),
+            totalItems: total,
+          },
+          search,
           data: dataResult,
         },
       };

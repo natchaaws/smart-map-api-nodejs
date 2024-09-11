@@ -1,6 +1,17 @@
 // src/controllers/notificationController.js
 const { NotificationsModel } = require("../models/notificationModel");
 
+const getfilterTpyeNotic = async (req, res) => {
+  try {
+    const filterTpye = await NotificationsModel.filterTpyeNoti();
+    res.json(filterTpye);
+    console.log("Show filterTpyeNotic Successfully!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 const getCheckCameraNotifications = async (req, res) => {
   const namecamera = req.body.camera;
 
@@ -71,6 +82,8 @@ const getNotifications = async (req, res) => {
   const type = req.body.type;
   const camera = req.body.camera;
   const plate = req.body.plate;
+  const startDateTime = req.body.startDateTime;
+  const endDateTime = req.body.endDateTime;
   try {
     const notifications = await NotificationsModel.getNotifications({
       type,
@@ -78,13 +91,19 @@ const getNotifications = async (req, res) => {
       plate,
       page,
       perPage,
+      startDateTime,
+      endDateTime,
     });
+    const countType = await NotificationsModel.countTypeToday();
+    const totalToday = await NotificationsModel.countToday();
+    const totalSevenday = await NotificationsModel.countSevendays();
     res.json({
       success: true,
-      page,
-      perPage,
-      search: { type, camera, plate },
-      notifications,
+      status: 200,
+      data: {
+        statistics: { totalToday, totalSevenday, countType },
+        notifications,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -95,6 +114,7 @@ const getNotifications = async (req, res) => {
 };
 
 module.exports = {
+  getfilterTpyeNotic,
   getCheckCameraNotifications,
   createNotification,
   getNotifications,
