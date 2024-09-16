@@ -5,7 +5,7 @@ const camerasController = require("../controllers/camerasController.js");
 
 const router = express.Router();
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, dest: "uploads/" });
 
 const apiVersion1 = process.env.API_VERSION_1;
 // Cameras

@@ -70,20 +70,38 @@ const {
 // /cameras/upload-csv
 const uploadCsv = async (req, res) => {
   try {
+    // ตรวจสอบว่าไฟล์ถูกอัปโหลดมาจริงหรือไม่
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded." });
+    }
+    const createdBy = req.body.created_by; // รับค่า created_by จาก req.body
     const fileBuffer = req.file.buffer; // รับไฟล์จากการอัพโหลด
     // แปลง CSV จาก buffer
     parse(fileBuffer, { delimiter: ",", columns: true }, async (err, data) => {
       if (err) {
         return res
           .status(400)
-          .json({ message: "Error parsing CSV file.", error: err });
+          .json({ status: 400, message: "Error parsing CSV file.", error: err });
       }
 
       const failedRows = []; // เก็บแถวที่ไม่ถูกบันทึกลง DB
+      const duplicateRows = []; // เก็บแถวที่มีชื่อกล้องซ้ำ
 
       // วนลูปผ่านแถวในไฟล์ CSV เพื่อทำการค้นหาและบันทึกข้อมูล
       for (const [index, row] of data.entries()) {
         try {
+
+          // เช็คว่าชื่อกล้องซ้ำหรือไม่
+          const isDuplicate = await CamerasModel.checkDuplicateCameraName(row.name);
+          if (isDuplicate) {
+            duplicateRows.push({
+              row: index + 1,
+              data: row,
+              error: "Camera name already exists.",
+            });
+            continue; // ข้ามแถวนี้ถ้าชื่อกล้องซ้ำ
+          }
+
           // ค้นหาไอดีจังหวัด
           const provinceId = await getProvinceId(row.province);
 
@@ -109,10 +127,13 @@ const uploadCsv = async (req, res) => {
             province_name: row.province,
             amphure_name: row.amphure,
             tambon_name: row.tambon,
-            created_by: req.body.created_by, // เพิ่ม created_by จาก req.body
+            created_by: createdBy, // เพิ่ม created_by เข้าไปในข้อมูลที่บันทึก
           };
 
           //  console.log(`Row ${index + 1}:`, camerasValues);
+          // บันทึกกล้องลงฐานข้อมูล
+
+          // บันทึกกล้องลงฐานข้อมูล
           await CamerasModel.createCamera(camerasValues);
         } catch (fetchError) {
           console.error(`Error processing row ${index + 1}:`, fetchError);
@@ -120,30 +141,51 @@ const uploadCsv = async (req, res) => {
             row: index + 1,
             data: row,
             error: fetchError.message,
-          }); // เก็บแถวที่ไม่ถูกบันทึก
+          });
+          continue; // ข้ามแถวที่ไม่ถูกบันทึก
         }
       }
 
-      if (failedRows.length > 0) {
-        console.log("Failed rows:", failedRows);
+      // ถ้ามี failedRows หรือ duplicateRows ต้องแจ้งกลับไปยัง front-end
+      if (failedRows.length > 0 || duplicateRows.length > 0) {
+        // console.log("🚀 ~ parse ~ duplicateRows:", duplicateRows)
+        return res.status(200).json({
+          status: 400,
+          success: false,
+          message: "Some rows failed to process or duplicate cameras exist.",
+          failedRows, // ส่งข้อมูลแถวที่ไม่ถูกบันทึกกลับไปด้วย
+          duplicateRows, // ส่งข้อมูลแถวที่ชื่อกล้องซ้ำกลับไปด้วย
+        });
       }
-
+      // ถ้าทุกอย่างสำเร็จ
       res.status(201).json({
         status: 201,
         success: true,
         message: "File uploaded and data created successfully.",
-        failEderror: failedRows, // ส่งข้อมูลแถวที่ไม่ถูกบันทึกกลับไปด้วย
       });
+
     });
   } catch (error) {
     console.error("Error processing file:", error);
-    res.status(500).json({ message: "Error processing file.", error });
+    res.status(500).json({ status: 500, message: "Error processing file.", error });
   }
 };
 // /cameras/camera
 const addCamera = async (req, res) => {
   try {
     const camerasValues = req.body;
+    const { name } = camerasValues;
+
+    // เช็คว่าชื่อกล้องซ้ำหรือไม่
+    const isDuplicate = await CamerasModel.checkDuplicateCameraName(name);
+    if (isDuplicate) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: "Camera name already exists. Please choose a different name.",
+      });
+    }
+
     // เพิ่ม geography_id ลงใน camerasValues
     // ค้นหา geographyId จาก province_id ที่ส่งมาจาก req.body
     const provinceId = camerasValues.province_id;
