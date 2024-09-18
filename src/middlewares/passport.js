@@ -1,3 +1,5 @@
+// src\middlewares\passport.js
+
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const { getUserById } = require('../models/userModel');
@@ -20,5 +22,7 @@ passport.use(
     }
   })
 );
+
+
 
 module.exports = passport;
