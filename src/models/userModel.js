@@ -137,13 +137,18 @@ WHERE
       });
       return {
         success: true,
-        search,
-        roleType: search_role,
+        status: 200,
         result: {
-          page,
-          perPage,
-          totalPages: Math.ceil(total / perPage),
-          total,
+          pagination: {
+            page,
+            perPage,
+            totalPages: Math.ceil(total / perPage),
+            totalItems: total,
+          },
+          search: {
+            search,
+            roleType: search_role,
+          },
           data: dataResult,
         },
       };

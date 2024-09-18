@@ -33,8 +33,7 @@ class NotificationsModel {
             INSERT INTO public.noti_from_socket 
             (type, map_camera_id, camera, plate, country, timestamp_from, cropimg, fullimg)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING noti_id;
-        `;
+            RETURNING noti_id;`;
 
     // Execute the query with the provided parameters
     const { rows } = await pool.query(query, [
@@ -50,14 +49,14 @@ class NotificationsModel {
     return rows[0].noti_id;
   }
   static async countToday() {
-    const todayQuery = `SELECT CO UNT(*)
+    const todayQuery = `SELECT COUNT(*)
     FROM public.noti_from_socket
     WHERE datetime >= CURRENT_DATE
       AND datetime < CURRENT_DATE + INTERVAL '1 day';`;
     const resultToday = await pool.query(todayQuery);
     const totalToday = parseInt(resultToday.rows[0].count);
 
-    return  totalToday ;
+    return totalToday;
   }
   static async countSevendays() {
     const Query = `SELECT COUNT(*) 
@@ -66,7 +65,7 @@ class NotificationsModel {
     const result = await pool.query(Query);
     const totalSevenday = parseInt(result.rows[0].count);
 
-    return totalSevenday ;
+    return totalSevenday;
   }
   static async countTypeToday() {
     const query = `WITH distinct_types AS (
@@ -169,13 +168,15 @@ comment, matched_lists
     return {
       dataTimeLoad: new Date().toISOString(), // Add current date-time
       //statistics: { totalToday },
-      page,
-      perPage,
-      totalPages: Math.ceil(total / perPage),
-      total,
+      pagination: {
+        page,
+        perPage,
+        totalPages: Math.ceil(total / perPage),
+        totalItems: total,
+      },
       range: { startDateTime, endDateTime },
       search: { type, camera, plate },
-      notifications: dataResult,
+      data: dataResult,
     };
   }
 }

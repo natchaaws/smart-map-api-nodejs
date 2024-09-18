@@ -174,12 +174,19 @@ class BulidingModel {
       });
       return {
         success: true,
-        search,
+        status: 200,
+
         result: {
-          page,
-          perPage,
-          totalPages: Math.ceil(total / perPage),
-          total,
+          pagination: {
+            page,
+            perPage,
+            totalPages: Math.ceil(total / perPage),
+            totalItems: total,
+          },
+          search: {
+            search
+          },
+
           data: dataResult,
         },
       };
@@ -239,15 +246,23 @@ class BulidingModel {
 
       return {
         success: true,
-        search,
-        building_id,
+        status: 200,
+       
         result: {
-          page,
-          perPage,
-          totalPages: Math.ceil(total / perPage),
-          total,
+          pagination: {
+            page,
+            perPage,
+            totalPages: Math.ceil(total / perPage),
+            totalItems: total,
+          },
+          search: {
+            search
+          },
+          building_id,
           building: buildingMarker,
           data: dataResult,
+
+
         },
       };
     } catch (error) {
@@ -308,14 +323,19 @@ class BulidingModel {
       const buildingMarker = buildingMarkerResult.rows[0];
 
       return {
-        success: true,
-        search,
-        floor_id,
+        success: true, status: 200,
+
         result: {
-          page,
-          perPage,
-          totalPages: Math.ceil(total / perPage),
-          total,
+          pagination: {
+            page,
+            perPage,
+            totalPages: Math.ceil(total / perPage),
+            totalItems: total,
+          },
+          search: {
+            search
+          },
+          floor_id,
           building: buildingMarker,
           data: dataResult,
         },
@@ -395,7 +415,7 @@ class BulidingModel {
   }
 
   static async getFloorImg() {
-    
+
   }
 }
 

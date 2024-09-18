@@ -30,6 +30,13 @@ class CamerasModel {
       },
     };
   }
+  
+  static async checkDuplicateCameraName(name) {
+    const query = `SELECT COUNT(*) FROM public.camera WHERE name = $1;`;
+    const result = await pool.query(query, [name]);
+    return result.rows[0].count > 0; // Return true if name exists
+  }
+
   // /cameras/camera
   static async createCamera(camerasValues) {
     const {

@@ -1,3 +1,4 @@
+// src\controllers\authController.js
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const usersModel = require("../models/userModel");
@@ -99,7 +100,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username, role_id: user.role_id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      { expiresIn: "24h" } // กำหนดเวลาหมดอายุของ token
     );
     await pool.query(
       "INSERT INTO login_logs (user_id, login_status, login_ip_address, description) VALUES ($1, $2, $3, $4)",
@@ -112,7 +113,7 @@ const login = async (req, res) => {
       message: "login success",
       user_id: user.user_id,
       role_id: user.role_id,
-      token,
+      token, // ส่ง token กลับไปให้ผู้ใช้
     });
   } catch (error) {
     console.error(error);
@@ -133,7 +134,7 @@ const verify = (req, res) => {
       .status(401)
       .json({ status: 401, success: false, message: "Token is missing" });
   }
-
+  
   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(401).json({
@@ -143,6 +144,7 @@ const verify = (req, res) => {
         err,
       });
     }
+const expirationTime = new Date(decoded.exp * 1000); // Convert expiration to readable date format
 
     res.json({
       status: 200,
@@ -150,6 +152,8 @@ const verify = (req, res) => {
       message: "Token is valid",
       user_id: decoded.user_id,
       role_id: decoded.role_id,
+      exp:decoded.exp,
+      expires_at: expirationTime, // Add the expiration date to the response
     });
   });
 };
