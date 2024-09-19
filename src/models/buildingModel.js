@@ -12,15 +12,16 @@ class BulidingModel {
       province_id,
       amphure_id,
       tambon_id,
+      created_by,
     } = buildValues;
     const query = `
     INSERT INTO public.building_marker(
         name, 
         build_lat, build_lng,
         geography_id, province_id, 
-        amphure_id, tambon_id)
+        amphure_id, tambon_id, created_by)
     VALUES 
-        ($1, $2, $3, $4 ,$5 , $6 ,$7);`;
+        ($1, $2, $3, $4 ,$5 , $6 ,$7, $8);`;
     const values = [
       name,
       build_lat,
@@ -29,6 +30,7 @@ class BulidingModel {
       province_id,
       amphure_id,
       tambon_id,
+      created_by,
     ];
 
     const result = await pool.query(query, values);
@@ -44,6 +46,7 @@ class BulidingModel {
       province_id,
       amphure_id,
       tambon_id,
+      modified_by,
       id,
     } = buildValues;
     const query = `
@@ -53,8 +56,10 @@ class BulidingModel {
             build_lat = $2, 
             build_lng = $3,
             geography_id = $4, province_id = $5, 
-            amphure_id = $6, tambon_id = $7
-        WHERE id = $8 RETURNING id
+            amphure_id = $6, tambon_id = $7,  
+            modified_by= $8, 
+            modified_date= NOW()
+        WHERE id = $9 RETURNING id
    `;
     const values = [
       name,
@@ -64,41 +69,62 @@ class BulidingModel {
       province_id,
       amphure_id,
       tambon_id,
-      id,
+      modified_by,
+      id
     ];
 
     const result = await pool.query(query, values);
     return result.rows[0];
   }
 
+  static async deleteBulidMarker(id) {
+    // Check if user exists
+    const userCheckQuery = "SELECT id, name FROM building_marker WHERE id = $1";
+    const userCheckResult = await pool.query(userCheckQuery, [id]);
+
+    if (userCheckResult.rowCount === 0) {
+      throw new Error("Building marker not found");
+    }
+
+    const query = `
+        UPDATE building_marker 
+        SET is_delete = true 
+    WHERE id = $1 
+    RETURNING id, is_delete; `;
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
+  }
+
   /* BulidFloor */
   static async createBulidFloor(floorValues) {
-    const { name, floor, build_img, building_id } = floorValues;
+    const { name, floor, build_img, created_by, building_id } = floorValues;
     const query = `
     INSERT INTO public.building_floor(
         name, 
         floor,
-        build_img, building_id)
-        VALUES ($1, $2, $3 ,$4);`;
-    const values = [name, floor, build_img, building_id];
+        build_img,created_by, building_id)
+        VALUES ($1, $2, $3 ,$4,$5);`;
+    const values = [name, floor, build_img, created_by, building_id];
 
     const result = await pool.query(query, values);
     return result.rows[0];
   }
 
   static async editBulidFloor(floorValues) {
-    const { name, floor, build_img, building_id, id } = floorValues;
+    const { name, floor, build_img, building_id, modified_by, id } = floorValues;
     const query = `
         UPDATE public.building_floor
             SET
             name = $1, 
             floor = $2, 
             build_img = $3,
-            building_id = $4
-        WHERE id = $5 
+           building_id = $4,  modified_by= $5, 
+           
+            modified_date= NOW()
+        WHERE id = $6 
         RETURNING id
    `;
-    const values = [name, floor, build_img, building_id, id];
+    const values = [name, floor, build_img, building_id, modified_by, id];
 
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -106,20 +132,21 @@ class BulidingModel {
 
   /* LocationFloor */
   static async createLocationFloor(LocationfloorValues) {
-    const { camera_name, rtsp_path, position_x, position_y, floor_id } =
+    const { camera_name, rtsp_path, position_x, position_y, floor_id, created_by } =
       LocationfloorValues;
     const query = `
     INSERT INTO public.building_location_onfloor(
-        camera_name, rtsp_path, position_x, position_y, floor_id)
-        VALUES ($1, $2, $3,$4,$5);`;
-    const values = [camera_name, rtsp_path, position_x, position_y, floor_id];
+        camera_name, rtsp_path, position_x, position_y, floor_id, created_by)
+        VALUES ($1, $2, $3, $4, $5, $6);`;
+    const values = [camera_name, rtsp_path, position_x, position_y, floor_id, created_by];
 
     const result = await pool.query(query, values);
     return result.rows[0];
   }
 
   static async editLocationFloor(LocationfloorValues) {
-    const { camera_name, rtsp_path, position_x, position_y, floor_id, id } =
+    const { camera_name, rtsp_path,
+      position_x, position_y, floor_id, modified_by, id } =
       LocationfloorValues;
     const query = `
         UPDATE public.building_location_onfloor
@@ -128,16 +155,20 @@ class BulidingModel {
             rtsp_path = $2, 
             position_x = $3,
             position_y = $4, 
-            floor_id= $5
-        WHERE id = $6 RETURNING id
+            floor_id= $5,
+            modified_by = $6, 
+            modified_date = NOW()
+        WHERE id = $7 
+        RETURNING id
    `;
     const values = [
       camera_name,
       rtsp_path,
       position_x,
       position_y,
-      floor_id,
-      id,
+      floor_id, modified_by,
+      id
+
     ];
 
     const result = await pool.query(query, values);
@@ -149,7 +180,9 @@ class BulidingModel {
     const offset = (page - 1) * perPage;
     const whereClause = `(name ILIKE $1 OR $1 IS NULL)`;
 
-    const query = `SELECT id, name, build_lat, build_lng, geography_id, province_id, amphure_id, tambon_id
+    const query = `SELECT id, name, build_lat, build_lng,
+     geography_id, province_id, amphure_id, tambon_id,
+     created_by, created_date, modified_by, modified_date, deleted_by, deleted_date
 	FROM public.building_marker
   WHERE ${whereClause} 
   ORDER BY id ASC 
@@ -247,7 +280,7 @@ class BulidingModel {
       return {
         success: true,
         status: 200,
-       
+
         result: {
           pagination: {
             page,
@@ -277,9 +310,9 @@ class BulidingModel {
     const whereClause = `(floor_id = $1) AND (camera_name ILIKE $2 OR $2 IS NULL)`;
 
     const query = `
-    SELECT id, camera_name, rtsp_path, position_x, position_y, floor_id
+    SELECT id, camera_name, rtsp_path, position_x, position_y, floor_id,created_by, created_date, modified_by, modified_date, deleted_by, deleted_date
     FROM public.building_location_onfloor
-        WHERE ${whereClause}
+        WHERE ${whereClause} AND is_delete = 'false'
         ORDER BY id ASC
         LIMIT $3 OFFSET $4;
     `;
@@ -414,9 +447,7 @@ class BulidingModel {
     return { success: true, status: 200, total, data: result.rows };
   }
 
-  static async getFloorImg() {
 
-  }
 }
 
 module.exports = { BulidingModel };
