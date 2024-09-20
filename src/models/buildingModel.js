@@ -77,7 +77,7 @@ class BulidingModel {
     return result.rows[0];
   }
 
-  static async deleteBulidMarker(id) {
+  static async deleteBulidMarker(deleted_by,id) {
     // Check if user exists
     const userCheckQuery = "SELECT id, name FROM building_marker WHERE id = $1";
     const userCheckResult = await pool.query(userCheckQuery, [id]);
@@ -88,10 +88,10 @@ class BulidingModel {
 
     const query = `
         UPDATE building_marker 
-        SET is_delete = true 
-    WHERE id = $1 
+        SET is_delete = true ,deleted_by= $1, deleted_date= NOW()
+    WHERE id = $2
     RETURNING id, is_delete; `;
-    const { rows } = await pool.query(query, [id]);
+    const { rows } = await pool.query(query, [deleted_by,id]);
     return rows[0];
   }
 

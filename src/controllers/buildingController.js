@@ -2,7 +2,10 @@ const { BulidingModel } = require("../models/buildingModel");
 
 /* BulidMarker */
 const createBulidMarker = async (req, res) => {
-  const buildValues = req.body;
+  const buildValues = {
+    ...req.body,
+    created_by: req.userData.username // กำหนดค่า created_by จาก req.userData.username
+  };
   try {
     const BulidMarker = await BulidingModel.createBulidMarker(buildValues);
     res.status(200).json({
@@ -17,13 +20,13 @@ const createBulidMarker = async (req, res) => {
       status: 500,
       success: false,
       message: "Internal server error",
-      error,
+      error: error.message,
     });
   }
 };
 
 const editBulidMarker = async (req, res) => {
-  const buildValues = req.body;
+  const buildValues = { ...req.body, modified_by: req.userData.username };
   try {
     const BulidMarker = await BulidingModel.editBulidMarker(buildValues);
     res.status(200).json({
@@ -42,10 +45,32 @@ const editBulidMarker = async (req, res) => {
     });
   }
 };
+// /buildings/mark/delete/:id
+const deleteBuildingMarker = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const deleted_by = req.userData.username;
+  try {
+    const result = await BulidingModel.deleteBulidMarker(deleted_by, id);
+    if (result) {
+      res.status(200).json({
+        message: "Building marker deleted successfully",
+        data: result
+      });
+    } else {
+      res.status(404).json({ message: "Building marker not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+};
+
 
 /* BulidFloor */
 const createBulidFloor = async (req, res) => {
-  const floorValues = req.body;
+  const floorValues = {
+    ...req.body,
+    created_by: req.userData.username
+  };
   try {
     const BulidFloor = await BulidingModel.createBulidFloor(floorValues);
     res.status(200).json({
@@ -66,7 +91,7 @@ const createBulidFloor = async (req, res) => {
 };
 
 const editBulidFloor = async (req, res) => {
-  const floorValues = req.body;
+  const floorValues = { ...req.body, modified_by: req.userData.username };
   try {
     const BulidFloor = await BulidingModel.editBulidFloor(floorValues);
     res.status(200).json({
@@ -88,7 +113,7 @@ const editBulidFloor = async (req, res) => {
 
 /* LocationFloor */
 const createLocationFloor = async (req, res) => {
-  const LocationfloorValues = req.body;
+  const LocationfloorValues ={ ...req.body, created_by: req.userData.username }
   try {
     const BulidFloor = await BulidingModel.createLocationFloor(
       LocationfloorValues
@@ -111,7 +136,7 @@ const createLocationFloor = async (req, res) => {
 };
 
 const editLocationFloor = async (req, res) => {
-  const LocationfloorValues = req.body;
+  const LocationfloorValues = { ...req.body, modified_by: req.userData.username };
   //console.log(LocationfloorValues);
   try {
     const LocationFloor = await BulidingModel.editLocationFloor(
@@ -247,6 +272,7 @@ const getFloorSelect = async (req, res) => {
 module.exports = {
   createBulidMarker,
   editBulidMarker,
+  deleteBuildingMarker,
   createBulidFloor,
   editBulidFloor,
   createLocationFloor,
