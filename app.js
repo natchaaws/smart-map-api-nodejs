@@ -18,6 +18,7 @@ const limiter = rateLimit({
   legacyHeaders: false, // ปิด `X-RateLimit-*` ใน headers
 
 });
+
 const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
@@ -43,12 +44,15 @@ app.get(`${apiVersion1}/health-check`, async (req, res) => {
     res.status(500).json({ status: 500, success: false, message: 'Database connection failed', error: err.message });
   }
 });
+app.get('/', (req, res) => {
+  res.send('SmartMap API is running');
+});
 
 app.get(`${apiVersion1}/`, (req, res) => {
   res.json({ message: "Hello from the API!", ip, port });
 });
 
-const ip = process.env.IP;
+const ip = process.env.IP || '0.0.0.0';
 const port = process.env.PORT;
 
 app.listen(port, ip, function () {

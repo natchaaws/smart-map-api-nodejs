@@ -1,0 +1,12 @@
+version: '3'
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: 10psim-api-image:v1.0.1
+    container_name: 10-psim-api-service
+    ports:
+      - "3930:3930"
+    env_file:
+      - .env

@@ -1,5 +1,5 @@
 // src\controllers\authController.js
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const usersModel = require("../models/userModel");
 const pool = require("../config/database");
@@ -85,6 +85,7 @@ const login = async (req, res) => {
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
+
     if (!passwordMatch) {
       await pool.query(
         "INSERT INTO login_logs (user_id, login_status, login_ip_address, description) VALUES ($1, $2, $3, $4)",

@@ -19,8 +19,7 @@ const jwtMiddleware = (req, res, next) => {
 
     // Token is valid, attach the decoded data to the request object
     req.userData = decoded;
-    console.log("🚀 ~ jwt.verify ~  req.userData:",  req.userData)
-   
+  //  console.log("🚀 ~ jwt.verify ~  req.userData:",  req.userData)
     next(); // Move to the next middleware
   });
 };
