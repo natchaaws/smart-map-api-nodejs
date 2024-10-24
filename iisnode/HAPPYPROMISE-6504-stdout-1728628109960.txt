@@ -1,0 +1,6 @@
+CORS-enabled web server listening on http://0.0.0.0:\\.\pipe\a2e0cfdd-2c3c-4edf-ab54-e871fdbc25d9
+Connected to the database 0.0.0.0 5437
+Show Provinces Successfully!
+Show District Successfully!
+Show Provinces Successfully!
+Show District Successfully!

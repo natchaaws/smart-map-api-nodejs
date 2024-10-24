@@ -45,7 +45,8 @@ app.get(`${apiVersion1}/health-check`, async (req, res) => {
   }
 });
 app.get('/', (req, res) => {
-  res.send('SmartMap API is running');
+  // res.send('SmartMap API is running');
+  res.json({status: 200, message: "10 PSIM Service Api is running" });
 });
 
 app.get(`${apiVersion1}/`, (req, res) => {

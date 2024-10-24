@@ -1,0 +1,22 @@
+CORS-enabled web server listening on http://0.0.0.0:\\.\pipe\50f31cac-d3f5-4f38-87a3-d931289580f4
+Connected to the database 0.0.0.0 5437
+Show filterTpyeNotic Successfully!
+Show BuildOnMap Successfully!
+Show Camera Successfully!
+Show Provinces Successfully!
+Show Provinces Successfully!
+Show District Successfully!
+Show Provinces Successfully!
+Show Camera Successfully!
+{ status: 400, message: 'ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว' }
+{ status: 400, message: 'ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว' }
+{ status: 400, message: 'ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว' }
+Show Camera Successfully!
+Show BuildOnMap Successfully!
+Show getFloorSelect Successfully!
+Show getPositionByFloorId Successfully!
+Show  roleFilter Successfully!
+Show  roleFilter Successfully!
+Show filterTpyeNotic Successfully!
+Show Provinces Successfully!
+Show Camera Successfully!
