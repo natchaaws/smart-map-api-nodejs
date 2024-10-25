@@ -72,5 +72,38 @@ module.exports = {
 
         const result = await pool.query(query, values);
         return parseInt(result.rows[0].count, 10);
+    },
+
+    async getDistinctBodyFields() {
+        const query = `
+          SELECT DISTINCT unnest(body_fields) AS body
+          FROM public.websocket_ports 
+          WHERE body_fields IS NOT NULL 
+          AND is_delete = 'false' 
+          ORDER BY  body ;
+        `;
+        const result = await pool.query(query);
+        return result.rows.map(row => row.body);
+    },
+    async getDistinctPorts() {
+        const query = `
+          SELECT DISTINCT port 
+          FROM public.websocket_ports 
+          WHERE is_delete = 'false' 
+          ORDER BY port;
+        `;
+        const result = await pool.query(query);
+        return result.rows.map(row => row.port); // Return only the port values
+    },
+
+    async getDistinctHeaders() {
+        const query = `
+          SELECT DISTINCT header 
+          FROM public.websocket_ports 
+          WHERE is_delete = 'false' 
+          ORDER BY header;
+        `;
+        const result = await pool.query(query);
+        return result.rows.map(row => row.header); // Return only the header values
     }
 };

@@ -16,5 +16,14 @@ module.exports = {
             },
             data
         };
+    },
+    async getDistinctBodyFields() {
+        return await websocketModel.getDistinctBodyFields();
+    }, async getPorts() {
+        return await websocketModel.getDistinctPorts();
+    },
+
+    async getHeaders() {
+        return await websocketModel.getDistinctHeaders();
     }
 };
