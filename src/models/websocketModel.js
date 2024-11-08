@@ -26,9 +26,12 @@ module.exports = {
                     query += ` AND body ? $${values.length + 1}`; // Check if key exists
                     values.push(key);
                 } else {
-                    // Search by key-value pair
-                    query += ` AND body @> $${values.length + 1}::jsonb`;
-                    values.push(JSON.stringify(search));
+                     // Search by key-value pair with ILIKE
+                     query += ` AND body->>$${values.length + 1} ILIKE $${values.length + 2}`;
+                     values.push(key, `%${value}%`);
+                    // // Search by key-value pair
+                    // query += ` AND body @> $${values.length + 1}::jsonb`;
+                    // values.push(JSON.stringify(search));
                 }
             });
         }
@@ -63,9 +66,9 @@ module.exports = {
                     query += ` AND body ? $${values.length + 1}`; // Check if key exists
                     values.push(key);
                 } else {
-                    // Search by key-value pair
-                    query += ` AND body @> $${values.length + 1}::jsonb`;
-                    values.push(JSON.stringify(search));
+                    // Search by key-value pair with ILIKE
+                query += ` AND body->>$${values.length + 1} ILIKE $${values.length + 2}`;
+                values.push(key, `%${value}%`);
                 }
             });
         }
@@ -87,13 +90,14 @@ module.exports = {
     },
     async getDistinctPorts() {
         const query = `
-          SELECT DISTINCT port 
-          FROM public.websocket_ports 
-          WHERE is_delete = 'false' 
-          ORDER BY port;
+          SELECT DISTINCT port, header
+            FROM public.websocket_ports
+            WHERE is_delete = 'false'
+            ORDER BY port;
+
         `;
         const result = await pool.query(query);
-        return result.rows.map(row => row.port); // Return only the port values
+        return result.rows
     },
 
     async getDistinctHeaders() {

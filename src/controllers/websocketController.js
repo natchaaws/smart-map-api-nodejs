@@ -37,6 +37,12 @@ module.exports = {
             // Use the service to fetch events with pagination
             const result = await websocketService.fetchEventsWithPagination(page, perPage, filters);
 
+            // Add sequential numbering to each row
+            const numberedData = result.data.map((row, index) => ({
+                no: (page - 1) * perPage + index + 1,
+                ...row
+            }));
+
             // Send the response with the fetched data
             res.status(200).json({
                 success: true,
@@ -50,7 +56,7 @@ module.exports = {
                         ports,
                         bodySearch
                     },
-                    data: result.data
+                    data: numberedData
                 }
             });
         } catch (error) {
