@@ -53,7 +53,7 @@ app.get(`${apiVersion1}/`, (req, res) => {
   res.json({ message: "Hello from the API!", ip, port });
 });
 
-const ip = process.env.IP || '0.0.0.0';
+const ip = process.env.IP;
 const port = process.env.PORT;
 
 app.listen(port, ip, function () {

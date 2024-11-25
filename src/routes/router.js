@@ -11,6 +11,7 @@ const notificationRoutes = require('./notificationRoutes');
 const userRoutes = require('./userRoutes');
 const streamRoutes = require('./streamRoutes');
 const eventsRoutes = require('./websocketRoutes');
+const modbusRoutes = require('./modbusRoutes');
 const router = express.Router();
 
 router.use(authRoutes);
@@ -23,6 +24,7 @@ router.use(notificationRoutes);
 router.use(userRoutes);
 router.use(streamRoutes)
 router.use(eventsRoutes)
+router.use(modbusRoutes)
 
 
 // Applying jwtMiddleware to all routes that require authentication
