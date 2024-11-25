@@ -1,0 +1,87 @@
+<html>
+<head>
+    <title>iisnode logs</title>
+    <style type="text/css">
+        body
+        {
+            font-family: "Trebuchet MS" , Arial, Helvetica, sans-serif;
+        }
+        table
+        {
+            border-collapse: collapse;
+        }
+        td, th
+        {
+            border: 1px solid lightgray;
+            padding: 3px 7px 2px 7px;
+        }
+        th
+        {
+            text-align: left;
+            padding-top: 5px;
+            padding-bottom: 4px;
+            background-color: Gray;
+            color: #ffffff;
+        }
+        td.stderr
+        {
+            color: Red;
+        }
+    </style>
+</head>
+<body>
+    <table id="logFilesTable">
+        <tr>
+            <th>
+                Computer name
+            </th>
+            <th>
+                PID
+            </th>
+            <th>
+                Type
+            </th>
+            <th>
+                Created
+            </th>
+            <th>
+                Link
+            </th>
+        </tr>
+    </table>
+    <p id="lastUpdated"></p>
+    <script type="text/javascript">
+
+        // this is replaced with actual data at runtime by code in interceptor.js
+        var logFiles = [{"file":"HAPPYPROMISE-13984-stderr-1728815656133.txt","computername":"HAPPYPROMISE","pid":13984,"type":"stderr","created":1728815656133},{"file":"HAPPYPROMISE-13984-stdout-1728815656131.txt","computername":"HAPPYPROMISE","pid":13984,"type":"stdout","created":1728815656131},{"file":"HAPPYPROMISE-14060-stderr-1728636754609.txt","computername":"HAPPYPROMISE","pid":14060,"type":"stderr","created":1728636754609},{"file":"HAPPYPROMISE-14060-stdout-1728636754607.txt","computername":"HAPPYPROMISE","pid":14060,"type":"stdout","created":1728636754607},{"file":"HAPPYPROMISE-16392-stderr-1728621511527.txt","computername":"HAPPYPROMISE","pid":16392,"type":"stderr","created":1728621511527},{"file":"HAPPYPROMISE-16392-stdout-1728621511524.txt","computername":"HAPPYPROMISE","pid":16392,"type":"stdout","created":1728621511524},{"file":"HAPPYPROMISE-17924-stderr-1728808954246.txt","computername":"HAPPYPROMISE","pid":17924,"type":"stderr","created":1728808954246},{"file":"HAPPYPROMISE-17924-stdout-1728808954244.txt","computername":"HAPPYPROMISE","pid":17924,"type":"stdout","created":1728808954244},{"file":"HAPPYPROMISE-24964-stderr-1728547331017.txt","computername":"HAPPYPROMISE","pid":24964,"type":"stderr","created":1728547331017},{"file":"HAPPYPROMISE-24964-stdout-1728547331003.txt","computername":"HAPPYPROMISE","pid":24964,"type":"stdout","created":1728547331003},{"file":"HAPPYPROMISE-26436-stderr-1728811592591.txt","computername":"HAPPYPROMISE","pid":26436,"type":"stderr","created":1728811592591},{"file":"HAPPYPROMISE-26436-stdout-1728811592588.txt","computername":"HAPPYPROMISE","pid":26436,"type":"stdout","created":1728811592588},{"file":"HAPPYPROMISE-32100-stderr-1729751296153.txt","computername":"HAPPYPROMISE","pid":32100,"type":"stderr","created":1729751296153},{"file":"HAPPYPROMISE-32100-stdout-1729751296011.txt","computername":"HAPPYPROMISE","pid":32100,"type":"stdout","created":1729751296011},{"file":"HAPPYPROMISE-33460-stderr-1728533920564.txt","computername":"HAPPYPROMISE","pid":33460,"type":"stderr","created":1728533920564},{"file":"HAPPYPROMISE-33460-stdout-1728533920562.txt","computername":"HAPPYPROMISE","pid":33460,"type":"stdout","created":1728533920562},{"file":"HAPPYPROMISE-34492-stderr-1728814251625.txt","computername":"HAPPYPROMISE","pid":34492,"type":"stderr","created":1728814251625},{"file":"HAPPYPROMISE-34492-stdout-1728814251622.txt","computername":"HAPPYPROMISE","pid":34492,"type":"stdout","created":1728814251622},{"file":"HAPPYPROMISE-6504-stderr-1728628109962.txt","computername":"HAPPYPROMISE","pid":6504,"type":"stderr","created":1728628109962},{"file":"HAPPYPROMISE-6504-stdout-1728628109960.txt","computername":"HAPPYPROMISE","pid":6504,"type":"stdout","created":1728628109960},{"file":"HAPPYPROMISE-7540-stderr-1729738204626.txt","computername":"HAPPYPROMISE","pid":7540,"type":"stderr","created":1729738204626},{"file":"HAPPYPROMISE-7540-stdout-1729738204622.txt","computername":"HAPPYPROMISE","pid":7540,"type":"stdout","created":1729738204622}];
+        var lastUpdated = 1729751296643;
+        var date = new Date();
+
+        date.setTime(lastUpdated);
+        document.getElementById('lastUpdated').innerHTML = 'Index was last updated ' + date;
+
+        logFiles.sort(function (a, b) {
+            return b.created - a.created;
+        });
+
+        var logFilesTable = document.getElementById("logFilesTable");
+        for (var i = 0; i < logFiles.length; i++) {
+            var logFile = logFiles[i];
+            date.setTime(logFile.created);
+            var row = logFilesTable.insertRow(-1);
+            var computerNameCell = row.insertCell(0);
+            var pidCell = row.insertCell(1);
+            var typeCell = row.insertCell(2);
+            var dateCell = row.insertCell(3);
+            var logCell = row.insertCell(4);
+            computerNameCell.innerHTML = logFile.computername;
+            pidCell.innerHTML = logFile.pid.toString();
+            typeCell.innerHTML = logFile.type;
+            typeCell.setAttribute('class', logFile.type);
+            dateCell.innerHTML = date.toString();
+            logCell.innerHTML = '<a href="' + logFile.file + '">log</a>';
+        };
+
+    </script>
+</body>
+</html>

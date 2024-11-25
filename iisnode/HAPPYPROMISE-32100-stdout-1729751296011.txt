@@ -1,0 +1,12 @@
+CORS-enabled web server listening on http://0.0.0.0:\\.\pipe\df32760a-f184-4834-832a-5d67646eb8f6
+Connected to the database 0.0.0.0 5437
+Show Tambons  Successfully!
+Show Amphures  Successfully!
+Show Provinces Successfully!
+Show Amphures  Successfully!
+Show Tambons  Successfully!
+Show District Successfully!
+Show Provinces Successfully!
+Show filterTpyeNotic Successfully!
+Show Provinces Successfully!
+Show District Successfully!

@@ -1,0 +1,122 @@
+(node:7540) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ValidationError: An undefined 'request.ip' was detected. This might indicate a misconfiguration or the connection being destroyed prematurely. See https://express-rate-limit.github.io/ERR_ERL_UNDEFINED_IP_ADDRESS/ for more information.
+    at Object.ip (D:\10\10-PSIM\smart-map-api-nodejs\node_modules\express-rate-limit\dist\index.cjs:125:13)
+    at wrappedValidations.<computed> [as ip] (D:\10\10-PSIM\smart-map-api-nodejs\node_modules\express-rate-limit\dist\index.cjs:338:22)
+    at Object.keyGenerator (D:\10\10-PSIM\smart-map-api-nodejs\node_modules\express-rate-limit\dist\index.cjs:591:20)
+    at D:\10\10-PSIM\smart-map-api-nodejs\node_modules\express-rate-limit\dist\index.cjs:644:32
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async D:\10\10-PSIM\smart-map-api-nodejs\node_modules\express-rate-limit\dist\index.cjs:625:5 {
+  code: 'ERR_ERL_UNDEFINED_IP_ADDRESS',
+  help: 'https://express-rate-limit.github.io/ERR_ERL_UNDEFINED_IP_ADDRESS/'
+}
+error: null value in column "user_id" of relation "login_logs" violates not-null constraint
+    at D:\10\10-PSIM\smart-map-api-nodejs\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async login (D:\10\10-PSIM\smart-map-api-nodejs\src\controllers\authController.js:76:7) {
+  length: 315,
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (lg241024102134647u, null, 2024-10-24 10:21:34.647802, null, false, null, No username information found. undefined).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'login_logs',
+  column: 'user_id',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2009',
+  routine: 'ExecConstraints'
+}
+error: null value in column "user_id" of relation "login_logs" violates not-null constraint
+    at D:\10\10-PSIM\smart-map-api-nodejs\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async login (D:\10\10-PSIM\smart-map-api-nodejs\src\controllers\authController.js:76:7) {
+  length: 315,
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (lg241024102354380u, null, 2024-10-24 10:23:54.380551, null, false, null, No username information found. undefined).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'login_logs',
+  column: 'user_id',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2009',
+  routine: 'ExecConstraints'
+}
+error: null value in column "user_id" of relation "login_logs" violates not-null constraint
+    at D:\10\10-PSIM\smart-map-api-nodejs\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async login (D:\10\10-PSIM\smart-map-api-nodejs\src\controllers\authController.js:76:7) {
+  length: 315,
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (lg241024105119528u, null, 2024-10-24 10:51:19.528412, null, false, null, No username information found. undefined).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'login_logs',
+  column: 'user_id',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2009',
+  routine: 'ExecConstraints'
+}
+error: null value in column "user_id" of relation "login_logs" violates not-null constraint
+    at D:\10\10-PSIM\smart-map-api-nodejs\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async login (D:\10\10-PSIM\smart-map-api-nodejs\src\controllers\authController.js:76:7) {
+  length: 315,
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (lg241024105123949u, null, 2024-10-24 10:51:23.949998, null, false, null, No username information found. undefined).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'login_logs',
+  column: 'user_id',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2009',
+  routine: 'ExecConstraints'
+}
+error: null value in column "user_id" of relation "login_logs" violates not-null constraint
+    at D:\10\10-PSIM\smart-map-api-nodejs\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async login (D:\10\10-PSIM\smart-map-api-nodejs\src\controllers\authController.js:76:7) {
+  length: 315,
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (lg241024105312724u, null, 2024-10-24 10:53:12.724174, null, false, null, No username information found. undefined).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'login_logs',
+  column: 'user_id',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '2009',
+  routine: 'ExecConstraints'
+}

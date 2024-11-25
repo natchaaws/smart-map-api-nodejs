@@ -233,7 +233,7 @@ class CamerasModel {
             public.a_provinces AS provinces ON c.province_id = provinces.id
         LEFT JOIN 
             public.a_geographies AS geographies ON c.geography_id = geographies.id
-        WHERE ${whereClause} 
+        WHERE ${whereClause}  AND c.is_delete = false
         ORDER BY c.camera_id ASC LIMIT $2 OFFSET $3;
     `;
 

@@ -21,6 +21,11 @@ router.post(
   buildingController.editBulidMarker
 );
 router.post(
+  `${apiVersion1}/buildings/mark/delete/:id`, jwtMiddleware,
+  upload.none(),
+  buildingController.deleteBuildingMarker
+);
+router.post(
   `${apiVersion1}/buildings/marks/floor`, jwtMiddleware,
   upload.none(),
   buildingController.createBulidFloor

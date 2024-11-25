@@ -18,6 +18,7 @@ const limiter = rateLimit({
   legacyHeaders: false, // ปิด `X-RateLimit-*` ใน headers
 
 });
+
 const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
@@ -42,6 +43,10 @@ app.get(`${apiVersion1}/health-check`, async (req, res) => {
     console.error('Error checking database connection:', err);
     res.status(500).json({ status: 500, success: false, message: 'Database connection failed', error: err.message });
   }
+});
+app.get('/', (req, res) => {
+  // res.send('SmartMap API is running');
+  res.json({status: 200, message: "10 PSIM Service Api is running" });
 });
 
 app.get(`${apiVersion1}/`, (req, res) => {

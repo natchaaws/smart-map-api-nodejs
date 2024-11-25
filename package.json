@@ -1,6 +1,15 @@
 {
+  "name": "10-psim-api",
+  "version": "1.0.0",
+  "description": "Smartmap API using Node.js and PostgreSQL",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "serve": " node app.js"
+  },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+  
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "csv-parse": "^5.5.6",

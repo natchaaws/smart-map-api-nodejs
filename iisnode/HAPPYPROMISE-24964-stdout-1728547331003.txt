@@ -1,0 +1,2 @@
+CORS-enabled web server listening on http://0.0.0.0:\\.\pipe\222948ea-28ea-478c-9df4-7e79ed89d334
+Connected to the database 0.0.0.0 5437

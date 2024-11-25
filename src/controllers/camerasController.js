@@ -10,62 +10,6 @@ const {
   getGeographyByProvinceId,
 } = require("../services/LocationService");
 
-// const uploadCsv = async (req, res) => {
-//   try {
-//     const fileBuffer = req.file.buffer; // รับไฟล์จากการอัพโหลด
-//     // แปลง CSV จาก buffer
-//     parse(fileBuffer, { delimiter: ",", columns: true }, async (err, data) => {
-//       if (err) {
-//         return res
-//           .status(400)
-//           .json({ message: "Error parsing CSV file.", error: err });
-//       }
-
-//         // วนลูปผ่านแถวในไฟล์ CSV เพื่อทำการค้นหาและบันทึกข้อมูล
-//       for (const row of data) {
-//         try {
-//         // ค้นหาไอดีจังหวัด
-//         const provinceId = await getProvinceId(row.province);
-
-//         // ค้นหาไอดีอำเภอโดยใช้ provinceId
-//         const amphureId = await getAmphureId(provinceId, row.amphure);
-
-//         // ค้นหาไอดีตำบลโดยใช้ amphureId
-//         const tambonId = await getTambonId(amphureId, row.tambon);
-
-//          // เก็บข้อมูลที่ได้จากการค้นหา
-//           const camerasValues = {
-//             name: row.name,
-//             rtsp_path: row.rtsp_path,
-//             camera_lat: row.lat,
-//             camera_lng: row.lng,
-//             province_id: provinceId,
-//             amphure_id: amphureId,
-//             tambon_id: tambonId,
-//             province_name: row.province,
-//             amphure_name: row.amphure,
-//             tambon_name: row.tambon,
-//             created_by: req.body.created_by // เพิ่ม created_by จาก req.body
-//           };
-
-//           console.log(camerasValues);
-//           await CamerasModel.createCamera(camerasValues);
-//         } catch (fetchError) {
-//           console.error("Error fetching location data:", fetchError);
-//         }
-//       }
-
-//       res.status(200).json({
-//         status: 200,
-//         success: true,
-//         message: "File uploaded and data saved successfully.",
-//       });
-//     });
-//   } catch (error) {
-//     console.error("Error processing file:", error);
-//     res.status(500).json({ message: "Error processing file.", error });
-//   }
-// };
 
 // /cameras/upload-csv
 const uploadCsv = async (req, res) => {
@@ -74,7 +18,7 @@ const uploadCsv = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded." });
     }
-    const createdBy = req.body.created_by; // รับค่า created_by จาก req.body
+    const createdBy = req.userData.username // รับค่า created_by จาก req.body
     const fileBuffer = req.file.buffer; // รับไฟล์จากการอัพโหลด
     // แปลง CSV จาก buffer
     parse(fileBuffer, { delimiter: ",", columns: true }, async (err, data) => {
@@ -173,7 +117,10 @@ const uploadCsv = async (req, res) => {
 // /cameras/camera
 const addCamera = async (req, res) => {
   try {
-    const camerasValues = req.body;
+    const camerasValues = {
+      ...req.body,
+      created_by: req.userData.username // เพิ่ม created_by จาก req.userData.username
+    };
     const { name } = camerasValues;
 
     // เช็คว่าชื่อกล้องซ้ำหรือไม่
@@ -221,6 +168,7 @@ const updateCamera = async (req, res) => {
     const camera_id = req.params.id; // ดึง camera_id จาก URL
     const camerasEdit = {
       ...req.body, // รวมข้อมูลจาก body
+      modified_by: req.userData.username,
       camera_id, // เพิ่ม camera_id จาก params ลงในข้อมูลที่ต้องการอัปเดต
     };
     // ค้นหา geographyId จาก province_id ที่ส่งมาจาก req.body
@@ -300,7 +248,11 @@ const getCameraPage = async (req, res) => {
 
 const addLiveCamera = async (req, res) => {
   try {
-    const Values = req.body;
+    const Values = { 
+      ...req.body, 
+      created_by: req.userData.username,
+      modified_by: req.userData.username 
+    };
     const LiveCamera = await CamerasModel.addLiveCamera(Values);
     //console.log({ status: 200, success: true, message: "successfully!" });
     res.status(200).json(LiveCamera);
