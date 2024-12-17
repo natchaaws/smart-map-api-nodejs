@@ -72,4 +72,18 @@ router.delete(
     jwtMiddleware,
     modbusController.deleteMessage
 );
+
+
+router.get(
+    `${apiVersion1}/modbus/devices/search`,
+    jwtMiddleware, // Middleware สำหรับตรวจสอบ JWT (ถ้ามี)
+    modbusController.findDevices
+);
+
+
+/* 
+*v2 
+ */
+
+
 module.exports = router;

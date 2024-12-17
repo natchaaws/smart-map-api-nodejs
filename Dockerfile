@@ -15,7 +15,7 @@ RUN npm install
 COPY . .
 
 # Expose พอร์ตที่แอปพลิเคชันรันอยู่
-EXPOSE 3930
+EXPOSE 3990
 
 # รันแอปพลิเคชัน Node.js
 CMD ["npm", "run", "serve"]

@@ -1,19 +1,11 @@
 // src\controllers\authController.js
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const usersModel = require("../models/userModel");
 const pool = require("../config/database");
 const register = async (req, res) => {
   try {
-    const {
-      name,
-      lastname,
-      tel,
-      email,
-      username,
-      password,
-      role_id: roleIdFromBody,
-    } = req.body;
+    const { name, lastname, tel, email, username, password, role_id: roleIdFromBody } = req.body;
     const role_id = parseInt(roleIdFromBody) || 3;
 
     // Determine who created the user based on role_id
@@ -36,7 +28,7 @@ const register = async (req, res) => {
       return res.status(400).json({
         success: false,
         status: 400,
-        message: "Username already exists. Please try again.",
+        message: "Username already exists. Please try again."
       });
     }
 
@@ -56,13 +48,11 @@ const register = async (req, res) => {
       success: true,
       status: 201,
       message: "User registered successfully",
-      id: user_id,
+      id: user_id
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ success: false, status: 500, message: "Error registering user" });
+    res.status(500).json({ success: false, status: 500, message: "Error registering user" });
   }
 };
 
@@ -73,40 +63,48 @@ const login = async (req, res) => {
     const userIP = req.ip;
 
     if (!user) {
-      await pool.query(
-        "INSERT INTO login_logs (user_id, login_status, login_ip_address, description) VALUES ($1, $2, $3, $4)",
-        [null, false, userIP, `No username information found. ${username}`]
-      );
+      const query = `
+      INSERT INTO login_logs 
+      (user_id, login_status, 
+      login_ip_address, description) 
+      VALUES ($1, $2, $3, $4)`;
+      const values = [null, false, userIP, `No username information found. ${username}`];
+      await pool.query(query, values);
+
       return res.status(401).json({
         status: 401,
         success: false,
-        message: "No username information found.",
+        message: "No username information found."
       });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      await pool.query(
-        "INSERT INTO login_logs (user_id, login_status, login_ip_address, description) VALUES ($1, $2, $3, $4)",
-        [user.user_id, false, userIP, "The password is incorrect."]
-      );
+      const query = `INSERT INTO login_logs 
+                  (user_id, login_status, 
+                  login_ip_address, description) 
+                  VALUES ($1, $2, $3, $4)`;
+      const values = [user.user_id, false, userIP, "The password is incorrect."];
+      await pool.query(query, values);
       return res.status(401).json({
         status: 401,
         success: false,
-        message: "The password is incorrect.",
+        message: "The password is incorrect."
       });
     }
 
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username, role_id: user.role_id },
       process.env.SECRET_KEY,
-      { expiresIn: "24h" } // กำหนดเวลาหมดอายุของ token
+      { algorithm: "HS256",expiresIn: "24h" } // กำหนดเวลาหมดอายุของ token
     );
-    await pool.query(
-      "INSERT INTO login_logs (user_id, login_status, login_ip_address, description) VALUES ($1, $2, $3, $4)",
-      [user.user_id, true, userIP, "Login success."]
-    );
+    const query = `INSERT INTO login_logs 
+                (user_id, login_status, 
+                login_ip_address, description) 
+                VALUES ($1, $2, $3, $4)`;
+    const values = [user.user_id, true, userIP, "Login success."];
+    await pool.query(query, values);
 
     res.json({
       status: 200,
@@ -114,7 +112,7 @@ const login = async (req, res) => {
       message: "login success",
       user_id: user.user_id,
       role_id: user.role_id,
-      token, // ส่ง token กลับไปให้ผู้ใช้
+      token // ส่ง token กลับไปให้ผู้ใช้
     });
   } catch (error) {
     console.error(error);
@@ -122,42 +120,67 @@ const login = async (req, res) => {
       status: 500,
       success: false,
       message: "Error logging in",
-      error,
+      error
     });
   }
 };
-
 const verify = (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-
-  if (!token) {
-    return res
-      .status(401)
-      .json({ status: 401, success: false, message: "Token is missing" });
-  }
-  
-  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({
-        status: 401,
-        success: false,
-        message: "Token is invalid",
-        err,
-      });
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authorization header is missing or invalid" });
     }
-const expirationTime = new Date(decoded.exp * 1000); // Convert expiration to readable date format
 
-    res.json({
-      status: 200,
-      success: true,
-      message: "Token is valid",
-      user_id: decoded.user_id,
-      role_id: decoded.role_id,
-      exp:decoded.exp,
-      expires_at: expirationTime, // Add the expiration date to the response
+    const token = authHeader.split(" ")[1];
+    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Token is invalid" });
+      }
+
+      const expirationTime = new Date(decoded.exp * 1000);
+
+      res.json({
+        success: true,
+        message: "Token is valid",
+        user_id: decoded.user_id,
+        expires_at: expirationTime,
+      });
     });
-  });
+  } catch (error) {
+    console.error("Token verification error:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
+
+// const verify = (req, res) => {
+//   const token = req.headers.authorization.split(" ")[1];
+
+//   if (!token) {
+//     return res.status(401).json({ status: 401, success: false, message: "Token is missing" });
+//   }
+
+//   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).json({
+//         status: 401,
+//         success: false,
+//         message: "Token is invalid",
+//         err
+//       });
+//     }
+//     const expirationTime = new Date(decoded.exp * 1000); // Convert expiration to readable date format
+
+//     res.json({
+//       status: 200,
+//       success: true,
+//       message: "Token is valid",
+//       user_id: decoded.user_id,
+//       role_id: decoded.role_id,
+//       exp: decoded.exp,
+//       expires_at: expirationTime // Add the expiration date to the response
+//     });
+//   });
+// };
 
 const userByid = async (req, res) => {
   try {
@@ -167,13 +190,11 @@ const userByid = async (req, res) => {
       success: true,
       status: 200,
       message: "User show successfully",
-      data: User,
+      data: User
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ success: false, status: 500, message: "Error registering user" });
+    res.status(500).json({ success: false, status: 500, message: "Error registering user" });
   }
 };
 
@@ -181,5 +202,5 @@ module.exports = {
   register,
   login,
   verify,
-  userByid,
+  userByid
 };

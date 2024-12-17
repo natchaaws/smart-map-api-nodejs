@@ -4,16 +4,7 @@ class BulidingModel {
   /* BulidMarker */
 
   static async createBulidMarker(buildValues) {
-    const {
-      name,
-      build_lat,
-      build_lng,
-      geography_id,
-      province_id,
-      amphure_id,
-      tambon_id,
-      created_by,
-    } = buildValues;
+    const { name, build_lat, build_lng, geography_id, province_id, amphure_id, tambon_id, created_by } = buildValues;
     const query = `
     INSERT INTO public.building_marker(
         name, 
@@ -22,33 +13,15 @@ class BulidingModel {
         amphure_id, tambon_id, created_by)
     VALUES 
         ($1, $2, $3, $4 ,$5 , $6 ,$7, $8);`;
-    const values = [
-      name,
-      build_lat,
-      build_lng,
-      geography_id,
-      province_id,
-      amphure_id,
-      tambon_id,
-      created_by,
-    ];
+    const values = [name, build_lat, build_lng, geography_id, province_id, amphure_id, tambon_id, created_by];
 
     const result = await pool.query(query, values);
     return result.rows[0];
   }
 
   static async editBulidMarker(buildValues) {
-    const {
-      name,
-      build_lat,
-      build_lng,
-      geography_id,
-      province_id,
-      amphure_id,
-      tambon_id,
-      modified_by,
-      id,
-    } = buildValues;
+    const { name, build_lat, build_lng, geography_id, province_id, amphure_id, tambon_id, modified_by, id } =
+      buildValues;
     const query = `
         UPDATE public.building_marker
             SET
@@ -61,23 +34,13 @@ class BulidingModel {
             modified_date= NOW()
         WHERE id = $9 RETURNING id
    `;
-    const values = [
-      name,
-      build_lat,
-      build_lng,
-      geography_id,
-      province_id,
-      amphure_id,
-      tambon_id,
-      modified_by,
-      id
-    ];
+    const values = [name, build_lat, build_lng, geography_id, province_id, amphure_id, tambon_id, modified_by, id];
 
     const result = await pool.query(query, values);
     return result.rows[0];
   }
 
-  static async deleteBulidMarker(deleted_by,id) {
+  static async deleteBulidMarker(deleted_by, id) {
     // Check if user exists
     const userCheckQuery = "SELECT id, name FROM building_marker WHERE id = $1";
     const userCheckResult = await pool.query(userCheckQuery, [id]);
@@ -91,7 +54,7 @@ class BulidingModel {
         SET is_delete = true ,deleted_by= $1, deleted_date= NOW()
     WHERE id = $2
     RETURNING id, is_delete; `;
-    const { rows } = await pool.query(query, [deleted_by,id]);
+    const { rows } = await pool.query(query, [deleted_by, id]);
     return rows[0];
   }
 
@@ -132,8 +95,7 @@ class BulidingModel {
 
   /* LocationFloor */
   static async createLocationFloor(LocationfloorValues) {
-    const { camera_name, rtsp_path, position_x, position_y, floor_id, created_by } =
-      LocationfloorValues;
+    const { camera_name, rtsp_path, position_x, position_y, floor_id, created_by } = LocationfloorValues;
     const query = `
     INSERT INTO public.building_location_onfloor(
         camera_name, rtsp_path, position_x, position_y, floor_id, created_by)
@@ -145,9 +107,7 @@ class BulidingModel {
   }
 
   static async editLocationFloor(LocationfloorValues) {
-    const { camera_name, rtsp_path,
-      position_x, position_y, floor_id, modified_by, id } =
-      LocationfloorValues;
+    const { camera_name, rtsp_path, position_x, position_y, floor_id, modified_by, id } = LocationfloorValues;
     const query = `
         UPDATE public.building_location_onfloor
             SET
@@ -161,15 +121,7 @@ class BulidingModel {
         WHERE id = $7 
         RETURNING id
    `;
-    const values = [
-      camera_name,
-      rtsp_path,
-      position_x,
-      position_y,
-      floor_id, modified_by,
-      id
-
-    ];
+    const values = [camera_name, rtsp_path, position_x, position_y, floor_id, modified_by, id];
 
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -202,7 +154,7 @@ class BulidingModel {
         const number = offset + index + 1;
         return {
           no: number,
-          ...row,
+          ...row
         };
       });
       return {
@@ -214,14 +166,14 @@ class BulidingModel {
             page,
             perPage,
             totalPages: Math.ceil(total / perPage),
-            totalItems: total,
+            totalItems: total
           },
           search: {
             search
           },
 
-          data: dataResult,
-        },
+          data: dataResult
+        }
       };
     } catch (error) {
       console.error("Error executing query", error);
@@ -243,26 +195,18 @@ class BulidingModel {
     const search = searchWord ? `%${searchWord}%` : null;
 
     try {
-      const result = await pool.query(query, [
-        building_id,
-        search,
-        perPage,
-        offset,
-      ]);
+      const result = await pool.query(query, [building_id, search, perPage, offset]);
       const data = result.rows;
 
       const totalCountQuery = `SELECT COUNT(*) FROM public.building_floor WHERE ${whereClause}`;
-      const totalCountResult = await pool.query(totalCountQuery, [
-        building_id,
-        search,
-      ]);
+      const totalCountResult = await pool.query(totalCountQuery, [building_id, search]);
       const total = parseInt(totalCountResult.rows[0].count);
 
       const dataResult = data.map((row, index) => {
         const number = offset + index + 1;
         return {
           no: number,
-          ...row,
+          ...row
         };
       });
 
@@ -272,9 +216,7 @@ class BulidingModel {
             FROM public.building_marker
             WHERE id = $1;
         `;
-      const buildingMarkerResult = await pool.query(buildingMarkerQuery, [
-        building_id,
-      ]);
+      const buildingMarkerResult = await pool.query(buildingMarkerQuery, [building_id]);
       const buildingMarker = buildingMarkerResult.rows[0];
 
       return {
@@ -286,17 +228,15 @@ class BulidingModel {
             page,
             perPage,
             totalPages: Math.ceil(total / perPage),
-            totalItems: total,
+            totalItems: total
           },
           search: {
             search
           },
           building_id,
           building: buildingMarker,
-          data: dataResult,
-
-
-        },
+          data: dataResult
+        }
       };
     } catch (error) {
       console.error("Error executing query", error);
@@ -319,26 +259,18 @@ class BulidingModel {
     const search = searchWord ? `%${searchWord}%` : null;
 
     try {
-      const result = await pool.query(query, [
-        floor_id,
-        search,
-        perPage,
-        offset,
-      ]);
+      const result = await pool.query(query, [floor_id, search, perPage, offset]);
       const data = result.rows;
 
       const totalCountQuery = `SELECT COUNT(*) FROM public.building_location_onfloor WHERE ${whereClause}`;
-      const totalCountResult = await pool.query(totalCountQuery, [
-        floor_id,
-        search,
-      ]);
+      const totalCountResult = await pool.query(totalCountQuery, [floor_id, search]);
       const total = parseInt(totalCountResult.rows[0].count);
 
       const dataResult = data.map((row, index) => {
         const number = offset + index + 1;
         return {
           no: number,
-          ...row,
+          ...row
         };
       });
 
@@ -350,28 +282,27 @@ class BulidingModel {
         JOIN public.building_marker AS bm ON bf.building_id = bm.id
         WHERE bf.id = $1;
         `;
-      const buildingMarkerResult = await pool.query(buildingMarkerQuery, [
-        floor_id,
-      ]);
+      const buildingMarkerResult = await pool.query(buildingMarkerQuery, [floor_id]);
       const buildingMarker = buildingMarkerResult.rows[0];
 
       return {
-        success: true, status: 200,
+        success: true,
+        status: 200,
 
         result: {
           pagination: {
             page,
             perPage,
             totalPages: Math.ceil(total / perPage),
-            totalItems: total,
+            totalItems: total
           },
           search: {
             search
           },
           floor_id,
           building: buildingMarker,
-          data: dataResult,
-        },
+          data: dataResult
+        }
       };
     } catch (error) {
       console.error("Error executing query", error);
@@ -409,7 +340,7 @@ class BulidingModel {
     return {
       success: true,
       status: 200,
-      data: { building: result.rows[0], location: resultLocation.rows },
+      data: { building: result.rows[0], location: resultLocation.rows }
     };
   }
 
@@ -446,8 +377,6 @@ class BulidingModel {
 
     return { success: true, status: 200, total, data: result.rows };
   }
-
-
 }
 
 module.exports = { BulidingModel };

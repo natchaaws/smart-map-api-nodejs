@@ -3,43 +3,27 @@
 const pool = require("../config/database");
 class usersModel {
   static async getUserByUsername(username) {
-    const query =
-      "SELECT * FROM users WHERE username = $1 AND is_delete = false";
-    const { rows } = await pool.query(query, [username]);
+    const query = "SELECT * FROM users WHERE username = $1 AND is_delete = false";
+    const values = [username];
+    const { rows } = await pool.query(query, values);
     return rows[0];
   }
 
-  static async createUser(
-    name,
-    lastname,
-    tel,
-    email,
-    username,
-    hashedPassword,
-    role_id,
-    created_by
-  ) {
+  static async createUser(name, lastname, tel, email, username, hashedPassword, role_id, created_by) {
     const query = `
     INSERT INTO users (name,lastname,tel,
     email,username, password, role_id, created_by)
     VALUES ($1, $2, $3, $4,$5, $6, $7, $8) RETURNING user_id
   `;
-    const { rows } = await pool.query(query, [
-      name,
-      lastname,
-      tel,
-      email,
-      username,
-      hashedPassword,
-      role_id,
-      created_by,
-    ]);
+    const values = [name, lastname, tel, email, username, hashedPassword, role_id, created_by];
+    const { rows } = await pool.query(query, values);
     return rows[0].user_id;
   }
 
   static async getUserById(user_id) {
     const query = "SELECT * FROM users WHERE user_id = $1";
-    const { rows } = await pool.query(query, [user_id]);
+    const values = [user_id];
+    const { rows } = await pool.query(query, values);
     return rows[0];
   }
 
@@ -64,7 +48,9 @@ WHERE
     u.user_id = $1 
     AND u.is_delete = false;
 `;
-    const { rows } = await pool.query(query, [user_id]);
+
+    const values = [user_id];
+    const { rows } = await pool.query(query, values);
     return rows[0];
   }
 
@@ -104,12 +90,8 @@ WHERE
     const search = searchWord ? `%${searchWord}%` : null;
     const search_role = searchRole || null;
     try {
-      const result = await pool.query(query, [
-        search,
-        search_role,
-        perPage,
-        offset,
-      ]);
+      const values = [search, search_role, perPage, offset];
+      const result = await pool.query(query, values);
       const data = result.rows;
 
       const totalCountQuery = `SELECT COUNT(*)
@@ -122,17 +104,15 @@ WHERE
         WHERE 
           ${whereClause} AND  ${whereRole} 
       `;
-      const totalCountResult = await pool.query(totalCountQuery, [
-        search,
-        search_role,
-      ]);
+      const searchValues = [search, search_role];
+      const totalCountResult = await pool.query(totalCountQuery, searchValues);
       const total = parseInt(totalCountResult.rows[0].count);
 
       const dataResult = data.map((row, index) => {
         const number = offset + index + 1;
         return {
           no: number,
-          ...row,
+          ...row
         };
       });
       return {
@@ -143,14 +123,14 @@ WHERE
             page,
             perPage,
             totalPages: Math.ceil(total / perPage),
-            totalItems: total,
+            totalItems: total
           },
           search: {
             search,
-            roleType: search_role,
+            roleType: search_role
           },
-          data: dataResult,
-        },
+          data: dataResult
+        }
       };
     } catch (error) {
       console.error("Error executing query", error);
@@ -162,9 +142,10 @@ WHERE
     // Check if user and role exist
     const userCheckQuery = "SELECT * FROM users WHERE user_id = $1";
     const roleCheckQuery = "SELECT * FROM role WHERE id = $1";
-
-    const userCheckResult = await pool.query(userCheckQuery, [user_id]);
-    const roleCheckResult = await pool.query(roleCheckQuery, [newRole]);
+    const userCheckValues = [user_id];
+    const roleCheckValues = [newRole];
+    const userCheckResult = await pool.query(userCheckQuery, userCheckValues);
+    const roleCheckResult = await pool.query(roleCheckQuery, roleCheckValues);
 
     if (userCheckResult.rowCount === 0) {
       throw new Error("User not found");
@@ -180,14 +161,16 @@ WHERE
       WHERE user_id = $2 AND is_delete = false 
       RETURNING user_id, role_id;
     `;
-    const { rows } = await pool.query(query, [newRole, user_id]);
+    const values = [newRole, user_id];
+    const { rows } = await pool.query(query, values);
     return rows[0];
   }
 
   static async deleteUser(user_id) {
     // Check if user exists
     const userCheckQuery = "SELECT * FROM users WHERE user_id = $1";
-    const userCheckResult = await pool.query(userCheckQuery, [user_id]);
+    const userCheckValues = [user_id];
+    const userCheckResult = await pool.query(userCheckQuery, userCheckValues);
 
     if (userCheckResult.rowCount === 0) {
       throw new Error("User not found");
@@ -199,7 +182,8 @@ WHERE
       WHERE user_id = $1 
       RETURNING user_id, is_delete;
     `;
-    const { rows } = await pool.query(query, [user_id]);
+    const values = [user_id];
+    const { rows } = await pool.query(query, values);
     return rows[0];
   }
 }

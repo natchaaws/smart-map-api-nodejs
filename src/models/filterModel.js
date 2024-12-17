@@ -18,10 +18,11 @@ class filterModel {
     FROM public.a_geographies geo
     JOIN public.a_provinces pro ON pro.geography_id = geo.id
     where pro.geography_id = $1 OR $1 IS NULL;`;
-
-    const { rows } = await pool.query(query, [id]);
+    const values = [id];
+    const { rows } = await pool.query(query, values);
     const totalCountQuery = `SELECT COUNT(*) FROM public.a_provinces pro where pro.geography_id = $1 OR $1 IS NULL`;
-    const totalCountResult = await pool.query(totalCountQuery, [id]);
+    const totalCountValues = [id];
+    const totalCountResult = await pool.query(totalCountQuery, totalCountValues);
     const total = parseInt(totalCountResult.rows[0].count);
     return { success: true, status: 200, total, data: rows };
   }
@@ -32,10 +33,11 @@ class filterModel {
                 FROM public.a_amphures a
                 JOIN public.a_provinces p ON a.province_id = p.id
                 where a.province_id = $1;`;
-
-    const { rows } = await pool.query(query, [province_id]);
+    const values = [province_id];
+    const { rows } = await pool.query(query, values);
     const totalCountQuery = `SELECT COUNT(*)  FROM public.a_amphures a where a.province_id = $1 `;
-    const totalCountResult = await pool.query(totalCountQuery, [province_id]);
+    const totalCountValues = [province_id];
+    const totalCountResult = await pool.query(totalCountQuery, totalCountValues);
     const total = parseInt(totalCountResult.rows[0].count);
     return { success: true, status: 200, total, data: rows };
   }
@@ -48,11 +50,11 @@ class filterModel {
         FROM public.a_tambon d 
         JOIN public.a_amphures a ON d.amphure_id  = a.id 
         where d.amphure_id = $1;`;
-
-    const { rows } = await pool.query(query, [amphure_id]);
-
+    const values = [amphure_id];
+    const { rows } = await pool.query(query, values);
+    const totalCountValues = [amphure_id];
     const totalCountQuery = `SELECT COUNT(*)  FROM public.a_tambon d where d.amphure_id = $1 `;
-    const totalCountResult = await pool.query(totalCountQuery, [amphure_id]);
+    const totalCountResult = await pool.query(totalCountQuery, totalCountValues);
     const total = parseInt(totalCountResult.rows[0].count);
     return { success: true, status: 200, total, data: rows };
   }
@@ -66,12 +68,8 @@ class filterModel {
       amphure_id = $2 AND 
       tambon_id = $3 
  ; `;
-
-    const { rows } = await pool.query(query, [
-      province_id,
-      amphure_id,
-      tambol_id,
-    ]);
+    const values = [province_id, amphure_id, tambol_id];
+    const { rows } = await pool.query(query, values);
 
     return { success: true, status: 200, data: rows };
   }

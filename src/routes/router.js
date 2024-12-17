@@ -27,11 +27,5 @@ router.use(eventsRoutes)
 router.use(modbusRoutes)
 
 
-// Applying jwtMiddleware to all routes that require authentication
-// router.use("/user", jwtMiddleware, userRoutes);
-// router.use("/cameras", jwtMiddleware, cameraRoutes);
-// router.use("/filters", jwtMiddleware, filterRoutes);
-// router.use("/buildings", jwtMiddleware, buildingRoutes);
-// router.use("/notifications", jwtMiddleware, notificationRoutes);
-// router.use("/streams", jwtMiddleware, streamRoutes);
+
 module.exports = router;

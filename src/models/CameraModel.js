@@ -3,61 +3,76 @@ const pool = require("../config/database");
 
 class CamerasModel {
   static async getDistrictByid(id) {
-    const query = `
-    SELECT camera_id, name, 
-    location, rtsp_path, 
-    camera_lat, camera_lng, 
-    district_id, status, 
-    ip_address, port, 
-    is_delete
-	FROM public.camera
-	where district_id = $1 AND is_delete = false;`;
+    if (!id || isNaN(id)) {
+      throw new Error("Invalid district_id provided");
+    }
 
-    const Dis_id = id ? id : null;
-    const result = await pool.query(query, [Dis_id]);
-    const data = result.rows;
+    try {
+      const query = `
+        SELECT camera_id, name, location, rtsp_path, 
+               camera_lat, camera_lng, district_id, 
+               status, ip_address, port, is_delete
+        FROM public.camera
+        WHERE district_id = $1 AND is_delete = false;`;
 
-    const totalCountQuery = `SELECT COUNT(*) FROM public.camera WHERE district_id = $1 AND is_delete = false`;
-    const totalCountResult = await pool.query(totalCountQuery, [Dis_id]);
-    const total = parseInt(totalCountResult.rows[0].count);
+      const totalCountQuery = `
+        SELECT COUNT(*) 
+        FROM public.camera 
+        WHERE district_id = $1 AND is_delete = false;`;
 
-    return {
-      success: true,
-      Dis_id,
-      result: {
-        total,
-        data: data,
-      },
-    };
+      const values = [id];
+
+      const result = await pool.query(query, values);
+      const totalCountResult = await pool.query(totalCountQuery, values);
+
+      return {
+        success: true,
+        district_id: id,
+        result: {
+          total: parseInt(totalCountResult.rows[0].count),
+          data: result.rows
+        }
+      };
+    } catch (error) {
+      console.error(`Error in getDistrictByid: ${error.message}`);
+      throw new Error("Failed to fetch district cameras");
+    }
   }
-  
+
   static async checkDuplicateCameraName(name) {
     const query = `SELECT COUNT(*) FROM public.camera WHERE name = $1;`;
+
     const result = await pool.query(query, [name]);
     return result.rows[0].count > 0; // Return true if name exists
   }
 
   // /cameras/camera
   static async createCamera(camerasValues) {
-    const {
-      name,
-      location,
-      rtsp_path,
-      camera_lat,
-      camera_lng,
-      district_id,
-      geography_id,
-      province_id,
-      amphure_id,
-      tambon_id,
-      province_name,
-      amphure_name,
-      tambon_name,
-      status,
-      ip_address,
-      port,
-      created_by,
-    } = camerasValues;
+    const requiredFields = ["name", "rtsp_path", "camera_lat", "camera_lng"];
+    for (const field of requiredFields) {
+      if (!camerasValues[field]) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+    // const {
+    //   name,
+    //   location,
+    //   rtsp_path,
+    //   camera_lat,
+    //   camera_lng,
+    //   district_id,
+    //   geography_id,
+    //   province_id,
+    //   amphure_id,
+    //   tambon_id,
+    //   province_name,
+    //   amphure_name,
+    //   tambon_name,
+    //   status,
+    //   ip_address,
+    //   port,
+    //   created_by,
+    // } = camerasValues;
 
     const query = `INSERT INTO public.camera(
       name, location, rtsp_path, 
@@ -68,30 +83,48 @@ class CamerasModel {
       status, ip_address, port, 
       created_by)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17);`;
+    // const values = [
+    //   name,
+    //   location,
+    //   rtsp_path,
+    //   camera_lat,
+    //   camera_lng,
+    //   district_id,
+    //   geography_id,
+    //   province_id,
+    //   amphure_id,
+    //   tambon_id,
+    //   province_name,
+    //   amphure_name,
+    //   tambon_name,
+    //   status,
+    //   ip_address,
+    //   port,
+    //   created_by,
+    // ];
     const values = [
-      name,
-      location,
-      rtsp_path,
-      camera_lat,
-      camera_lng,
-      district_id,
-      geography_id,
-      province_id,
-      amphure_id,
-      tambon_id,
-      province_name,
-      amphure_name,
-      tambon_name,
-      status,
-      ip_address,
-      port,
-      created_by,
+      camerasValues.name,
+      camerasValues.location,
+      camerasValues.rtsp_path,
+      camerasValues.camera_lat,
+      camerasValues.camera_lng,
+      camerasValues.district_id || null,
+      camerasValues.geography_id || null,
+      camerasValues.province_id || null,
+      camerasValues.amphure_id || null,
+      camerasValues.tambon_id || null,
+      camerasValues.province_name || null,
+      camerasValues.amphure_name || null,
+      camerasValues.tambon_name || null,
+      camerasValues.status || null,
+      camerasValues.ip_address || null,
+      camerasValues.port || null,
+      camerasValues.created_by
     ];
-
     const result = await pool.query(query, values);
     return result.rows[0]; // Return the newly created employee
   }
-// /cameras/camera/:id
+  // /cameras/camera/:id
   static async editCamera(camerasEdit) {
     const {
       name,
@@ -111,7 +144,7 @@ class CamerasModel {
       ip_address,
       port,
       modified_by,
-      camera_id,
+      camera_id
     } = camerasEdit;
 
     const query = `UPDATE public.camera
@@ -154,7 +187,7 @@ class CamerasModel {
       port,
       modified_by,
       status,
-      camera_id,
+      camera_id
     ];
     const result = await pool.query(query, values);
     return result.rows[0]; // Return the newly created employee
@@ -238,9 +271,9 @@ class CamerasModel {
     `;
 
     const search = searchWord ? `%${searchWord}%` : null;
-
+    const values = [search, perPage, offset];
     try {
-      const result = await pool.query(query, [search, perPage, offset]);
+      const result = await pool.query(query, values);
 
       const data = result.rows;
 
@@ -256,7 +289,8 @@ class CamerasModel {
           LEFT JOIN 
             public.a_geographies AS geographies ON c.geography_id = geographies.id 
         WHERE ${whereClause}`;
-      const totalCountResult = await pool.query(totalCountQuery, [search]);
+      const totalCountValues = [search];
+      const totalCountResult = await pool.query(totalCountQuery, totalCountValues);
       const total = parseInt(totalCountResult.rows[0].count);
 
       const dataResult = data.map((row, index) => {
@@ -272,31 +306,31 @@ class CamerasModel {
           location_camera: {
             geography: {
               id: row.geography_id,
-              name: row.geo_name,
+              name: row.geo_name
             },
             provinces: {
               id: row.province_id,
-              name: row.pro_name,
+              name: row.pro_name
             },
             amphures: {
               id: row.amphure_id,
-              name: row.amp_name,
+              name: row.amp_name
             },
             tambons: {
               id: row.tambon_id,
-              name: row.tamb_name,
+              name: row.tamb_name
             },
             district: {
               id: row.district_id,
-              name: row.district_name,
+              name: row.district_name
             },
             province_name: row.province_name,
             amphure_name: row.amphure_name,
-            tambon_name: row.tambon_name,
+            tambon_name: row.tambon_name
           },
-          status: row.status || "unknown",  // Default to 'unknown' if null
+          status: row.status || "unknown", // Default to 'unknown' if null
           ip_address: row.ip_address || "N/A", // Default to 'N/A' if null
-          port: row.port || "N/A",  // Default to 'N/A' if null
+          port: row.port || "N/A", // Default to 'N/A' if null
 
           created_by: row.created_by,
           created_date: row.created_date,
@@ -304,7 +338,7 @@ class CamerasModel {
           modified_date: row.modified_date,
           deleted_by: row.deleted_by,
           deleted_date: row.deleted_date,
-          is_delete: row.is_delete,
+          is_delete: row.is_delete
         };
       });
       return {
@@ -316,11 +350,11 @@ class CamerasModel {
             page,
             perPage,
             totalPages: Math.ceil(total / perPage),
-            totalItems: total,
+            totalItems: total
           },
           search,
-          data: dataResult,
-        },
+          data: dataResult
+        }
       };
     } catch (error) {
       console.error("Error executing query", error);
@@ -336,14 +370,15 @@ class CamerasModel {
       FROM  public.live_view
       WHERE user_id = $1
       `;
-    const existingUser = await pool.query(existingUserQuery, [user_id]);
+    const values = [user_id];
+    const existingUser = await pool.query(existingUserQuery, values);
 
     if (existingUser.rows.length > 0) {
       // update
       // If a user with the same username already exists, respond with an error message
       console.log({
         status: 400,
-        message: "ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว",
+        message: "ผู้ใช้มีจัดมีประวัติการจัดเรียงแล้ว"
       });
 
       const queryUpdate = `
@@ -354,19 +389,14 @@ class CamerasModel {
           modified_by= $3, 
           modified_date= NOW()
       WHERE user_id = $4 RETURNING user_id,live_id ;`;
-      const valuesUpdate = [
-        layout,
-        JSON.stringify(cameras),
-        modified_by,
-        user_id,
-      ];
+      const valuesUpdate = [layout, JSON.stringify(cameras), modified_by, user_id];
 
       const result = await pool.query(queryUpdate, valuesUpdate);
       return {
         status: 200,
         success: true,
         message: "Update successfully!",
-        Camera: result.rows[0],
+        Camera: result.rows[0]
       };
     } else {
       // insert
@@ -378,25 +408,20 @@ class CamerasModel {
               created_by
               ) 
           VALUES ($1, $2, $3, $4)  RETURNING *;`;
-      const valuesInsert = [
-        user_id,
-        layout,
-        JSON.stringify(cameras),
-        created_by,
-      ];
+      const valuesInsert = [user_id, layout, JSON.stringify(cameras), created_by];
 
       const result = await pool.query(queryInsert, valuesInsert);
       return {
         status: 200,
         success: true,
         message: "Add live_view successfully!",
-        Camera: result.rows[0],
+        Camera: result.rows[0]
       };
     }
   }
 
   static async getCamerasByIds(userId) {
-    const userquery = `
+    const userQuery = `
       SELECT lv.live_id, lv.user_id, 
           lv.layout, 
           u.username, u.email, u.role_id
@@ -433,12 +458,14 @@ class CamerasModel {
           public.a_geographies g ON c.geography_id = g.id;
   
   `;
+    const values = [userId];
+    const userValues = [userId];
 
     try {
-      const result = await pool.query(query, [userId]);
+      const result = await pool.query(query, values);
       const camera = result.rows;
 
-      const rowsuser = await pool.query(userquery, [userId]);
+      const rowsuser = await pool.query(userQuery, userValues);
       const user = rowsuser.rows[0];
       return { user, camera };
     } catch (error) {

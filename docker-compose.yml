@@ -7,6 +7,6 @@ services:
     image: 10psim-api-image:v1.0.1
     container_name: 10-psim-api-service
     ports:
-      - "3930:3930"
+      - "3990:3990"
     env_file:
       - .env

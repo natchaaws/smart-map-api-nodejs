@@ -4,7 +4,6 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config();
 const bodyParser = require("body-parser");
-
 const helmet = require("helmet");
 
 const passport = require("./src/middlewares/passport"); // Import passport middleware
@@ -23,7 +22,7 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
-app.use(helmet());
+app.use(helmet()); // Helmet.js middleware
 app.use(limiter); //ใช้ middleware ทำ rate limit
 app.use(passport.initialize()); // Initialize passport middleware
 app.use(express.urlencoded({ extended: true }));
